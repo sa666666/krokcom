@@ -21,6 +21,9 @@
 #include <QStatusBar>
 #include <QTextEdit>
 #include <QProgressDialog>
+#include <QAction>
+#include <QActionGroup>
+#include <QRegExp>
 
 #include <iostream>
 #include <sstream>
@@ -34,7 +37,8 @@ using namespace std;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 KrokComWindow::KrokComWindow(QWidget* parent)
   : QMainWindow(parent),
-    ui(new Ui::KrokComWindow)
+    ui(new Ui::KrokComWindow),
+    myDetectedBSType(BS_NONE)
 {
   // Create GUI
   ui->setupUi(this);
@@ -64,18 +68,33 @@ KrokComWindow::~KrokComWindow()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::setupConnections()
 {
-  // Menus
+  // File menu
   connect(ui->actSelectROM, SIGNAL(triggered()), this, SLOT(slotOpenROM()));
   connect(ui->actDownloadROM, SIGNAL(triggered()), this, SLOT(slotDownloadROM()));
   connect(ui->actVerifyROM, SIGNAL(triggered()), this, SLOT(slotVerifyROM()));
-  connect(ui->actConnectKrokCart, SIGNAL(triggered()), this, SLOT(slotConnectKrokCart()));
   connect(ui->actQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+  // Device menu
+  connect(ui->actConnectKrokCart, SIGNAL(triggered()), this, SLOT(slotConnectKrokCart()));
+
+  // Options menu
+  QActionGroup* group = new QActionGroup(this);
+  group->setExclusive(true);
+  group->addAction(ui->actRetry0);
+  group->addAction(ui->actRetry1);
+  group->addAction(ui->actRetry2);
+  group->addAction(ui->actRetry3);
+  connect(group, SIGNAL(triggered(QAction*)), this, SLOT(slotRetry(QAction*)));
+
+  // Help menu
   connect(ui->actAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
   // Buttons
   connect(ui->openRomButton, SIGNAL(clicked()), this, SLOT(slotOpenROM()));
   connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(slotDownloadROM()));
   connect(ui->verifyButton, SIGNAL(clicked()), this, SLOT(slotVerifyROM()));
+  connect(ui->romBSType, SIGNAL(activated(const QString&)), this, SLOT(slotSetBSType(const QString&)));
+
 
 }
 
@@ -97,8 +116,8 @@ void KrokComWindow::slotConnectKrokCart()
   else
   {
     myStatus->setText("Krokodile Cartridge not found.");
-//    QPixmap off(ledoff_xpm);
-//    myLED->setPixmap(off);
+    QPixmap off(":icons/pics/ledoff.png");
+    myLED->setPixmap(off);
   }
 }
 
@@ -118,9 +137,14 @@ void KrokComWindow::slotOpenROM()
   {
     ui->romFileEdit->setText(file);
     ui->romSizeLabel->setText(QString::number(myCart.getSize()) + " bytes.");
-    QString bstype = Bankswitch::typeToName(myCart.getBSType()).c_str();
+    myDetectedBSType = myCart.getBSType();
+    QString bstype = Bankswitch::typeToName(myDetectedBSType).c_str();
     int match = ui->romBSType->findText(bstype, Qt::MatchStartsWith);
     ui->romBSType->setCurrentIndex(match < ui->romBSType->count() ? match : 0);
+
+    // See if we should automatically download
+    if(ui->actAutoDownFileSelect->isChecked())
+      slotDownloadROM();
   }
   else
     myStatus->setText("Invalid cartridge.");
@@ -129,6 +153,7 @@ void KrokComWindow::slotOpenROM()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotDownloadROM()
 {
+cerr << "download ROM\n";
   if(!myManager.krokCartAvailable())
   {
     myStatus->setText("Krokodile Cartridge not found.");
@@ -160,9 +185,42 @@ void KrokComWindow::slotDownloadROM()
   }
   progress.setValue(numSectors);
   myStatus->setText("Cartridge downloaded.");
+
+  // See if we should automatically verify the download
+  if(ui->actAutoVerifyDownload->isChecked())
+      slotVerifyROM();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotVerifyROM()
 {
+cerr << "Verify download of ROM\n";
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotRetry(QAction* action)
+{
+  if(action == ui->actRetry0)       myCart.setRetry(0);
+  else if(action == ui->actRetry1)  myCart.setRetry(1);
+  else if(action == ui->actRetry2)  myCart.setRetry(2);
+  else if(action == ui->actRetry3)  myCart.setRetry(3);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotSetBSType(const QString& text)
+{
+  QRegExp regex("([a-zA-Z0-9]*)");
+  regex.indexIn(text);
+  QString t = regex.cap();
+  BSType selectedType = Bankswitch::nameToType(regex.cap().toStdString());
+
+  if(myCart.isValid())
+  {
+    if(myDetectedBSType != selectedType)
+    {
+cerr << "Sure you want to override type (yes/no/always)?\n";
+    }
+    else
+      myCart.setBSType(myDetectedBSType);
+  }
 }

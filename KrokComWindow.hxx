@@ -18,6 +18,7 @@
 #define __KROKCOM_WINDOW_HXX
 
 #include <QMainWindow>
+#include <QAction>
 #include <QLabel>
 #include <QProgressBar>
 
@@ -45,12 +46,16 @@ Q_OBJECT
     void slotOpenROM();
     void slotDownloadROM();
     void slotVerifyROM();
+    void slotRetry(QAction* action);
+    void slotSetBSType(const QString& text);
+
 
   private:
     Ui::KrokComWindow* ui;
 
     Cart myCart;
     SerialPortManager myManager;
+    BSType myDetectedBSType;
 
     QLabel* myStatus;
     QLabel* myLED;

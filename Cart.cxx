@@ -28,6 +28,7 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Cart::Cart()
   : myCartSize(0),
+    myRetry(0),
     myType(BS_NONE),
     myCurrentSector(0),
     myNumSectors(0),
@@ -77,9 +78,9 @@ uInt16 Cart::writeNextSector(SerialPort& port)
     myCurrentSector = 2040;
 
   uInt16 sector = myCurrentSector;
-  int retry = 0;
+  uInt32 retry = 0;
   bool status;
-  while(!(status = downloadSector(sector, port)) && retry++ < 5)
+  while(!(status = downloadSector(sector, port)) && retry++ < myRetry)
     cout << "Transmission of sector " <<  sector << " failed, retry " << retry << endl;
   if(!status)
     throw "write: failed max retries";
