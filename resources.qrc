@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icons" >
+        <file>pics/romchip.png</file>
+    </qresource>
+</RCC>
