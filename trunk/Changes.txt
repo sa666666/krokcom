@@ -1,0 +1,17 @@
+============================================================================
+
+  K   K  RRRR    OOO   K   K   CCCC   OOO   M   M
+  K  K   R   R  O   O  K  K   C      O   O  MM MM
+  KKK    RRRR   O   O  KKK    C      O   O  M M M  "Krokodile Cart software"
+  K  K   R R    O   O  K  K   C      O   O  M   M
+  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
+
+============================================================================
+                             Release History
+============================================================================
+
+0.1: (May xx, 2009)
+
+  * TODO!
+
+-Have fun!

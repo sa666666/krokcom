@@ -1,0 +1,46 @@
+============================================================================
+
+  K   K  RRRR    OOO   K   K   CCCC   OOO   M   M
+  K  K   R   R  O   O  K  K   C      O   O  MM MM
+  KKK    RRRR   O   O  KKK    C      O   O  M M M  "Krokodile Cart software"
+  K  K   R R    O   O  K  K   C      O   O  M   M
+  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
+
+============================================================================
+                     Release 0.1 for Linux and Mac OSX
+============================================================================
+
+The Krokodile Cartridge is a programmable game cartridge for the 2600 game
+console.  The cartridge contains 512K of Flash ROM that can be programmed by
+connecting the cartridge to a Windows PC with a serial cable.  Once connected
+to a PC, the Windows-based Krokodile Commander software is then used to
+download software into the Krokodile Cartridge.  The cartridge also includes
+32K of built-in RAM to support games that require additional onboard
+cartridge memory (such as Atari's SARA-chip games).
+
+KrokCom is a cross-platform application used to program the Krokodile
+Cartridge from a serial port/USB-serial converter for Linux/UNIX and OSX
+systems.  Both GUI and commandline usage is supported.
+
+This is the 0.1 release of KrokCom for Linux and Mac OSX.  The distributions
+currently available are:
+
+  * Binary distribution in 32-bit Ubuntu DEB format (krokcom_0.1-1_i386.deb)
+
+  * Binary distribution in 64-bit Ubuntu DEB format (krokcom_0.1-1_amd64.deb)
+
+  * Binary distribution for Mac OSX (KrokCom0.1.dmg)
+
+  * Source code distribution for all platforms (krokcom-0.1-src.tar.gz)
+
+Distribution Site
+================= 
+
+The KrokCom distributions can be obtained from the KrokCom Website at:
+
+  http://krokcom.sourceforge.net
+
+Information about the Krokodile Cartridge (and software for Windows)
+can be obtained from the authors Website:
+
+  http://www.arminvogl.de/KrokodileCartridge
