@@ -70,6 +70,9 @@ class Cart
     BSType getBSType()            { return myType; }
     void   setBSType(BSType type) { myType = type; }
 
+    /** Set number of write retries before bailing out. */
+    void setRetry(int retry) { myRetry = retry; }
+
     /** Get the current cart size. */
     uInt32 getSize() { return myCartSize; }
 
@@ -96,6 +99,7 @@ class Cart
   private:
     uInt8  myCart[MAXCARTSIZE];
     uInt32 myCartSize;
+    uInt32 myRetry;
     BSType myType;
 
     // The following keep track of progress of sector writes
