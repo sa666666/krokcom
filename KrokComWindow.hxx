@@ -38,8 +38,12 @@ Q_OBJECT
     KrokComWindow(QWidget* parent = 0);
     ~KrokComWindow();
 
+  protected:
+    void closeEvent(QCloseEvent* event);
+
   private:
     void setupConnections();
+    void readSettings();
 
   private slots:
     void slotConnectKrokCart();
@@ -48,7 +52,7 @@ Q_OBJECT
     void slotVerifyROM();
     void slotRetry(QAction* action);
     void slotSetBSType(const QString& text);
-
+    void slotAbout();
 
   private:
     Ui::KrokComWindow* ui;

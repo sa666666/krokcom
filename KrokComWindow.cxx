@@ -24,8 +24,12 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QRegExp>
+#include <QSettings>
+#include <QCloseEvent>
+#include <QMessageBox>
 
 #include <iostream>
+#include <sstream>
 #include <sstream>
 using namespace std;
 
@@ -57,6 +61,15 @@ KrokComWindow::KrokComWindow(QWidget* parent)
 
   // Find and connect to KrokCart
   slotConnectKrokCart();
+
+  // Deactivate download and verify until it makes sense to use them
+  ui->downloadButton->setDisabled(true);  ui->actDownloadROM->setDisabled(true);
+  ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
+
+  // Initialize settings
+  QCoreApplication::setOrganizationName("KrokCom");
+  QCoreApplication::setApplicationName("Krokodile Commander");
+  readSettings();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,7 +85,7 @@ void KrokComWindow::setupConnections()
   connect(ui->actSelectROM, SIGNAL(triggered()), this, SLOT(slotOpenROM()));
   connect(ui->actDownloadROM, SIGNAL(triggered()), this, SLOT(slotDownloadROM()));
   connect(ui->actVerifyROM, SIGNAL(triggered()), this, SLOT(slotVerifyROM()));
-  connect(ui->actQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+  connect(ui->actQuit, SIGNAL(triggered()), this, SLOT(close()));
 
   // Device menu
   connect(ui->actConnectKrokCart, SIGNAL(triggered()), this, SLOT(slotConnectKrokCart()));
@@ -87,6 +100,7 @@ void KrokComWindow::setupConnections()
   connect(group, SIGNAL(triggered(QAction*)), this, SLOT(slotRetry(QAction*)));
 
   // Help menu
+  connect(ui->actAbout, SIGNAL(triggered()), this, SLOT(slotAbout()));
   connect(ui->actAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
   // Buttons
@@ -95,7 +109,45 @@ void KrokComWindow::setupConnections()
   connect(ui->verifyButton, SIGNAL(clicked()), this, SLOT(slotVerifyROM()));
   connect(ui->romBSType, SIGNAL(activated(const QString&)), this, SLOT(slotSetBSType(const QString&)));
 
+}
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::readSettings()
+{
+  // Load settings
+  QSettings s;
+
+  s.beginGroup("MainWindow");
+    int retrycount = s.value("retrycount", 0).toInt();
+    if(retrycount == 0)       ui->actRetry0->setChecked(true);
+    else if(retrycount == 1)  ui->actRetry1->setChecked(true);
+    else if(retrycount == 2)  ui->actRetry2->setChecked(true);
+    else if(retrycount == 3)  ui->actRetry3->setChecked(true);
+    myCart.setRetry(retrycount);
+    ui->actAutoDownFileSelect->setChecked(s.value("autodownload", false).toBool());
+    ui->actAutoVerifyDownload->setChecked(s.value("autoverify", false).toBool());
+  s.endGroup();
+
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::closeEvent(QCloseEvent* event)
+{
+  // Save settings
+  QSettings s;
+
+  s.beginGroup("MainWindow");
+    int retrycount = 0;
+    if(ui->actRetry0->isChecked())       retrycount = 0;
+    else if(ui->actRetry1->isChecked())  retrycount = 1;
+    else if(ui->actRetry2->isChecked())  retrycount = 2;
+    else if(ui->actRetry3->isChecked())  retrycount = 3;
+    s.setValue("retrycount", retrycount);
+    s.setValue("autodownload", ui->actAutoDownFileSelect->isChecked());
+    s.setValue("autoverify", ui->actAutoVerifyDownload->isChecked());
+  s.endGroup();
+
+  event->accept();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,6 +176,9 @@ void KrokComWindow::slotConnectKrokCart()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotOpenROM()
 {
+  ui->downloadButton->setDisabled(true);  ui->actDownloadROM->setDisabled(true);
+  ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
+
   QString file = QFileDialog::getOpenFileName(this,
     tr("Select ROM Image"), "", tr("Atari 2600 ROM Image (*.bin *.a26)"));
 
@@ -141,6 +196,7 @@ void KrokComWindow::slotOpenROM()
     QString bstype = Bankswitch::typeToName(myDetectedBSType).c_str();
     int match = ui->romBSType->findText(bstype, Qt::MatchStartsWith);
     ui->romBSType->setCurrentIndex(match < ui->romBSType->count() ? match : 0);
+    ui->downloadButton->setDisabled(false);  ui->actDownloadROM->setDisabled(false);
 
     // See if we should automatically download
     if(ui->actAutoDownFileSelect->isChecked())
@@ -154,6 +210,8 @@ void KrokComWindow::slotOpenROM()
 void KrokComWindow::slotDownloadROM()
 {
 cerr << "download ROM\n";
+  ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
+
   if(!myManager.krokCartAvailable())
   {
     myStatus->setText("Krokodile Cartridge not found.");
@@ -185,6 +243,7 @@ cerr << "download ROM\n";
   }
   progress.setValue(numSectors);
   myStatus->setText("Cartridge downloaded.");
+  ui->verifyButton->setDisabled(false);  ui->actVerifyROM->setDisabled(false);
 
   // See if we should automatically verify the download
   if(ui->actAutoVerifyDownload->isChecked())
@@ -223,4 +282,26 @@ cerr << "Sure you want to override type (yes/no/always)?\n";
     else
       myCart.setBSType(myDetectedBSType);
   }
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotAbout()
+{
+  ostringstream about;
+  about << "<center>"
+        << "<p><b>Krokodile Commander for UNIX v0.1</b></p>"
+        << "<p>Copyright &copy; 2009 Stephen Anthony<br>"
+        << "<a href=\"mailto:stephena@users.sf.net\">stephena@users.sf.net</a></p>"
+        << "<p><a href=\"http://krokcom.sf.net\">http://krokcom.sf.net</a><p>"
+        << "<p>Based on the original Windows version<br>"
+        << "Copyright &copy; 2002-2009 <a href=\"mailto:Armin.Vogl@gmx.net\">Armin Vogl</a>"
+        << "<p>This software is released under the GNU GPLv2</p>"
+        << "</center>";
+
+  QMessageBox mb;
+  mb.setWindowTitle("Info about Krokodile Commander");
+  mb.setIconPixmap(QPixmap(":icons/pics/cart.png"));
+  mb.setTextFormat(Qt::RichText);
+  mb.setText(about.str().c_str());
+  mb.exec();
 }
