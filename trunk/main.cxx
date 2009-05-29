@@ -92,7 +92,6 @@ int main(int ac, char* av[])
     QApplication app(ac, av);
     KrokComWindow win;
     win.show();
-    app.connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
     return app.exec();
   }
   else  // Assume we're working from the commandline
