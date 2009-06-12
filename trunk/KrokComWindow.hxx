@@ -40,10 +40,14 @@ Q_OBJECT
 
   protected:
     void closeEvent(QCloseEvent* event);
+    bool eventFilter(QObject* object, QEvent* event);
 
   private:
     void setupConnections();
     void readSettings();
+    void loadROM(const QString& file);
+    void assignToQPButton(QPushButton* button, int id);
+    void assignToQPButton(QPushButton* button, int id, const QString& file, bool save);
 
   private slots:
     void slotConnectKrokCart();
@@ -53,6 +57,7 @@ Q_OBJECT
     void slotRetry(QAction* action);
     void slotSetBSType(const QString& text);
     void slotAbout();
+    void slotQPButtonClicked(int id);
 
   private:
     Ui::KrokComWindow* ui;
@@ -64,6 +69,8 @@ Q_OBJECT
     QLabel* myStatus;
     QLabel* myLED;
     QProgressBar* myProgress;
+
+    QString myKrokCartMessage;
 };
 
 #endif

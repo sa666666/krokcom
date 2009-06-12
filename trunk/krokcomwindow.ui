@@ -421,6 +421,163 @@
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
             <widget class="QPushButton" name="qp1Button">
+             <property name="contextMenuPolicy">
+              <enum>Qt::DefaultContextMenu</enum>
+             </property>
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="qp4Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="qp5Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="qp6Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="qp7Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QPushButton" name="qp8Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="qp9Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="qp10Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QPushButton" name="qp11Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QPushButton" name="qp12Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QPushButton" name="qp13Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QPushButton" name="qp14Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QPushButton" name="qp15Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QPushButton" name="qp16Button">
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="qp3Button">
              <property name="toolTip">
               <string>Right-click to select ROM Image.
 Left-click to use the chosen ROM.</string>
@@ -432,104 +589,10 @@ Left-click to use the chosen ROM.</string>
            </item>
            <item row="0" column="1">
             <widget class="QPushButton" name="qp2Button">
-             <property name="text">
-              <string/>
+             <property name="toolTip">
+              <string>Right-click to select ROM Image.
+Left-click to use the chosen ROM.</string>
              </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="qp3Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QPushButton" name="qp4Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QPushButton" name="qp5Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QPushButton" name="qp6Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="qp7Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QPushButton" name="qp8Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QPushButton" name="qp9Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QPushButton" name="qp10Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2">
-            <widget class="QPushButton" name="qp11Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="3">
-            <widget class="QPushButton" name="qp12Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QPushButton" name="qp13Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QPushButton" name="qp14Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QPushButton" name="qp15Button">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="3">
-            <widget class="QPushButton" name="qp16Button">
              <property name="text">
               <string/>
              </property>
