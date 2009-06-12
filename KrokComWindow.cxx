@@ -23,6 +23,7 @@
 #include <QProgressDialog>
 #include <QAction>
 #include <QActionGroup>
+#include <QButtonGroup>
 #include <QRegExp>
 #include <QSettings>
 #include <QCloseEvent>
@@ -32,8 +33,6 @@
 #include <sstream>
 #include <sstream>
 using namespace std;
-
-//#include "pics/ledoff.xpm"
 
 #include "KrokComWindow.hxx"
 #include "ui_krokcomwindow.h"
@@ -62,7 +61,8 @@ KrokComWindow::KrokComWindow(QWidget* parent)
   // Find and connect to KrokCart
   slotConnectKrokCart();
 
-  // Deactivate download and verify until it makes sense to use them
+  // Deactivate bankswitch, download and verify until it makes sense to use them
+  ui->romBSType->setDisabled(true);
   ui->downloadButton->setDisabled(true);  ui->actDownloadROM->setDisabled(true);
   ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
 
@@ -109,6 +109,26 @@ void KrokComWindow::setupConnections()
   connect(ui->verifyButton, SIGNAL(clicked()), this, SLOT(slotVerifyROM()));
   connect(ui->romBSType, SIGNAL(activated(const QString&)), this, SLOT(slotSetBSType(const QString&)));
 
+  // Quick-select buttons
+  QButtonGroup* qpGroup = new QButtonGroup(this);
+  qpGroup->setExclusive(false);
+  qpGroup->addButton(ui->qp1Button, 1);   ui->qp1Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp2Button, 2);   ui->qp2Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp3Button, 3);   ui->qp3Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp4Button, 4);   ui->qp4Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp5Button, 5);   ui->qp5Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp6Button, 6);   ui->qp6Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp7Button, 7);   ui->qp7Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp8Button, 8);   ui->qp8Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp9Button, 9);   ui->qp9Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp10Button, 10); ui->qp10Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp11Button, 11); ui->qp11Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp12Button, 12); ui->qp12Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp13Button, 13); ui->qp13Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp14Button, 14); ui->qp14Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp15Button, 15); ui->qp15Button->installEventFilter(this);
+  qpGroup->addButton(ui->qp16Button, 16); ui->qp16Button->installEventFilter(this);
+  connect(qpGroup, SIGNAL(buttonClicked(int)), this, SLOT(slotQPButtonClicked(int)));
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,6 +147,26 @@ void KrokComWindow::readSettings()
     ui->actAutoDownFileSelect->setChecked(s.value("autodownload", false).toBool());
     ui->actAutoVerifyDownload->setChecked(s.value("autoverify", false).toBool());
   s.endGroup();
+
+  s.beginGroup("QPButtons");
+    assignToQPButton(ui->qp1Button, 1, s.value("button1", "").toString(), false);
+    assignToQPButton(ui->qp2Button, 2, s.value("button2", "").toString(), false);
+    assignToQPButton(ui->qp3Button, 3, s.value("button3", "").toString(), false);
+    assignToQPButton(ui->qp4Button, 4, s.value("button4", "").toString(), false);
+    assignToQPButton(ui->qp5Button, 5, s.value("button5", "").toString(), false);
+    assignToQPButton(ui->qp6Button, 6, s.value("button6", "").toString(), false);
+    assignToQPButton(ui->qp7Button, 7, s.value("button7", "").toString(), false);
+    assignToQPButton(ui->qp8Button, 8, s.value("button8", "").toString(), false);
+    assignToQPButton(ui->qp9Button, 9, s.value("button9", "").toString(), false);
+    assignToQPButton(ui->qp10Button, 10, s.value("button10", "").toString(), false);
+    assignToQPButton(ui->qp11Button, 11, s.value("button11", "").toString(), false);
+    assignToQPButton(ui->qp12Button, 12, s.value("button12", "").toString(), false);
+    assignToQPButton(ui->qp13Button, 13, s.value("button13", "").toString(), false);
+    assignToQPButton(ui->qp14Button, 14, s.value("button14", "").toString(), false);
+    assignToQPButton(ui->qp15Button, 15, s.value("button15", "").toString(), false);
+    assignToQPButton(ui->qp16Button, 16, s.value("button16", "").toString(), false);
+  s.endGroup();
+
 
 }
 
@@ -151,59 +191,69 @@ void KrokComWindow::closeEvent(QCloseEvent* event)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool KrokComWindow::eventFilter(QObject* object, QEvent* event)
+{
+  // This is necessary because braindead QPushButtons don't return right-click events
+  if(event->type() == QEvent::ContextMenu)
+  {
+    int id = 0;
+    if(object == ui->qp1Button)       id = 1;
+    else if(object == ui->qp2Button)  id = 2;
+    else if(object == ui->qp3Button)  id = 3;
+    else if(object == ui->qp4Button)  id = 4;
+    else if(object == ui->qp5Button)  id = 5;
+    else if(object == ui->qp6Button)  id = 6;
+    else if(object == ui->qp7Button)  id = 7;
+    else if(object == ui->qp8Button)  id = 8;
+    else if(object == ui->qp9Button)  id = 9;
+    else if(object == ui->qp10Button) id = 10;
+    else if(object == ui->qp11Button) id = 11;
+    else if(object == ui->qp12Button) id = 12;
+    else if(object == ui->qp13Button) id = 13;
+    else if(object == ui->qp14Button) id = 14;
+    else if(object == ui->qp15Button) id = 15;
+    else if(object == ui->qp16Button) id = 16;
+    else return false;
+
+    assignToQPButton(static_cast<QPushButton*>(object), id);
+    return  true;
+  }
+  else
+  {
+    // pass the event on to the parent class
+    return QMainWindow::eventFilter(object, event);
+  }
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotConnectKrokCart()
 {
   myManager.connectKrokCart();
   if(myManager.krokCartAvailable())
   {
-    QString about = "\'";
-    about.append(myManager.versionID().c_str());
-    about.append("\' @ \'");
-    about.append(myManager.portName().c_str());
-    about.append("\'");
-    myStatus->setText(about);
-//    QPixmap on(ledon_xpm);
-//    myLED->setPixmap(on);
+    myKrokCartMessage = "\'";
+    myKrokCartMessage.append(myManager.versionID().c_str());
+    myKrokCartMessage.append("\' @ \'");
+    myKrokCartMessage.append(myManager.portName().c_str());
+    myKrokCartMessage.append("\'.");
+    myLED->setPixmap(QPixmap(":icons/pics/ledon.png"));
   }
   else
   {
-    myStatus->setText("Krokodile Cartridge not found.");
-    QPixmap off(":icons/pics/ledoff.png");
-    myLED->setPixmap(off);
+    myKrokCartMessage = "Krokodile Cartridge not found.";
+    myLED->setPixmap(QPixmap(":icons/pics/ledoff.png"));
   }
+  myStatus->setText(myKrokCartMessage);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotOpenROM()
 {
-  ui->downloadButton->setDisabled(true);  ui->actDownloadROM->setDisabled(true);
-  ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
-
   QString file = QFileDialog::getOpenFileName(this,
     tr("Select ROM Image"), "", tr("Atari 2600 ROM Image (*.bin *.a26)"));
 
-  if(file.isNull())
-    return;
-
-  // Create a single-load cart
-  myCart.createSingle(file.toStdString());
-
-  if(myCart.isValid())
-  {
-    ui->romFileEdit->setText(file);
-    ui->romSizeLabel->setText(QString::number(myCart.getSize()) + " bytes.");
-    myDetectedBSType = myCart.getBSType();
-    QString bstype = Bankswitch::typeToName(myDetectedBSType).c_str();
-    int match = ui->romBSType->findText(bstype, Qt::MatchStartsWith);
-    ui->romBSType->setCurrentIndex(match < ui->romBSType->count() ? match : 0);
-    ui->downloadButton->setDisabled(false);  ui->actDownloadROM->setDisabled(false);
-
-    // See if we should automatically download
-    if(ui->actAutoDownFileSelect->isChecked())
-      slotDownloadROM();
-  }
-  else
-    myStatus->setText("Invalid cartridge.");
+  if(!file.isNull())
+    loadROM(file);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -304,4 +354,83 @@ void KrokComWindow::slotAbout()
   mb.setTextFormat(Qt::RichText);
   mb.setText(about.str().c_str());
   mb.exec();
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotQPButtonClicked(int id)
+{
+  // Get the full path from the settings
+  QString key = "button" + QString::number(id);
+  QSettings s;
+  s.beginGroup("QPButtons");
+    QString file = s.value(key, "").toString();
+  s.endGroup();
+
+  loadROM(file);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::loadROM(const QString& file)
+{
+  if(file == "")
+    return;
+
+  ui->romBSType->setDisabled(true);
+  ui->downloadButton->setDisabled(true);  ui->actDownloadROM->setDisabled(true);
+  ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
+
+  // Create a single-load cart
+  myCart.createSingle(file.toStdString());
+
+  if(myCart.isValid())
+  {
+    ui->romFileEdit->setText(file);
+    ui->romSizeLabel->setText(QString::number(myCart.getSize()) + " bytes.");
+    myDetectedBSType = myCart.getBSType();
+    QString bstype = Bankswitch::typeToName(myDetectedBSType).c_str();
+    int match = ui->romBSType->findText(bstype, Qt::MatchStartsWith);
+    ui->romBSType->setCurrentIndex(match < ui->romBSType->count() ? match : 0);
+    ui->romBSType->setDisabled(false);
+    ui->downloadButton->setDisabled(false);  ui->actDownloadROM->setDisabled(false);
+
+    // See if we should automatically download
+    if(ui->actAutoDownFileSelect->isChecked())
+      slotDownloadROM();
+  }
+  else
+    myStatus->setText("Invalid cartridge.");
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::assignToQPButton(QPushButton* button, int id)
+{
+  QString file = QFileDialog::getOpenFileName(this,
+    tr("Select ROM Image"), "", tr("Atari 2600 ROM Image (*.bin *.a26)"));
+
+  if(!file.isNull())
+    assignToQPButton(button, id, file, true);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::assignToQPButton(QPushButton* button, int id,
+                                     const QString& file, bool save)
+{
+  QFileInfo info(file);
+
+  // Only add files that exist
+  QString filename = info.fileName();
+  if(filename == "")
+    return;
+
+  // Otherwise, add the file itself to the button, and the full path to settings
+  button->setText(filename);
+
+  if(save)
+  {
+    QString key = "button" + QString::number(id);
+    QSettings s;
+    s.beginGroup("QPButtons");
+      s.setValue(key, info.canonicalFilePath());
+    s.endGroup();
+  }
 }
