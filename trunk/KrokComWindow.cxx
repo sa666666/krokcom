@@ -28,6 +28,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QTimer>
 
 #include <iostream>
 #include <sstream>
@@ -58,9 +59,6 @@ KrokComWindow::KrokComWindow(QWidget* parent)
   myLED = new QLabel();
   statusBar()->addPermanentWidget(myLED);
 
-  // Find and connect to KrokCart
-  slotConnectKrokCart();
-
   // Deactivate bankswitch, download and verify until it makes sense to use them
   ui->romBSType->setDisabled(true);
   ui->downloadButton->setDisabled(true);  ui->actDownloadROM->setDisabled(true);
@@ -70,6 +68,9 @@ KrokComWindow::KrokComWindow(QWidget* parent)
   QCoreApplication::setOrganizationName("KrokCom");
   QCoreApplication::setApplicationName("Krokodile Commander");
   readSettings();
+
+  // Find and connect to KrokCart (make sure ::readSettings() is called first)
+  slotConnectKrokCart();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,6 +139,7 @@ void KrokComWindow::readSettings()
   QSettings s;
 
   s.beginGroup("MainWindow");
+    myManager.setDefaultPort(s.value("krokport", "").toString().toStdString());
     int retrycount = s.value("retrycount", 0).toInt();
     if(retrycount == 0)       ui->actRetry0->setChecked(true);
     else if(retrycount == 1)  ui->actRetry1->setChecked(true);
@@ -177,6 +179,7 @@ void KrokComWindow::closeEvent(QCloseEvent* event)
   QSettings s;
 
   s.beginGroup("MainWindow");
+    s.setValue("krokport", QString(myManager.portName().c_str()));
     int retrycount = 0;
     if(ui->actRetry0->isChecked())       retrycount = 0;
     else if(ui->actRetry1->isChecked())  retrycount = 1;
@@ -259,7 +262,6 @@ void KrokComWindow::slotOpenROM()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotDownloadROM()
 {
-cerr << "download ROM\n";
   ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
 
   if(!myManager.krokCartAvailable())
@@ -270,40 +272,87 @@ cerr << "download ROM\n";
   else if(!myCart.isValid())
   {
     myStatus->setText("Invalid cartridge.");
+    QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
     return;
   }
 
   // Write to serial port
-  uInt16 numSectors = myCart.initSectors();
+  uInt16 sector = 0, numSectors = myCart.initSectors();
   QProgressDialog progress("Downloading ROM...", QString(), 0, numSectors, this);
   progress.setWindowModality(Qt::WindowModal);
   progress.setMinimumDuration(0);
   try
   {
-    for(uInt16 sector = 0; sector < numSectors; ++sector)
+    for(sector = 0; sector < numSectors; ++sector)
     {
       myCart.writeNextSector(myManager.port());
       progress.setValue(sector);
-//      if(progress.wasCanceled())
-//        break;
     }
   }
   catch(const char* msg)
   {
+    cout << msg << endl;
   }
-  progress.setValue(numSectors);
-  myStatus->setText("Cartridge downloaded.");
-  ui->verifyButton->setDisabled(false);  ui->actVerifyROM->setDisabled(false);
 
-  // See if we should automatically verify the download
-  if(ui->actAutoVerifyDownload->isChecked())
+  if(sector == numSectors)
+  {
+    progress.setValue(numSectors);
+    myStatus->setText("Cartridge downloaded.");
+
+    ui->verifyButton->setDisabled(false);  ui->actVerifyROM->setDisabled(false);
+
+    // See if we should automatically verify the download
+    if(ui->actAutoVerifyDownload->isChecked())
       slotVerifyROM();
+  }
+  else
+    myStatus->setText("Download failure on sector " + QString::number(sector) + ".");
+
+  QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotVerifyROM()
 {
-cerr << "Verify download of ROM\n";
+  if(!myManager.krokCartAvailable())
+  {
+    myStatus->setText("Krokodile Cartridge not found.");
+    return;
+  }
+  else if(!myCart.isValid())
+  {
+    myStatus->setText("Invalid cartridge.");
+    QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
+    return;
+  }
+
+  // Verify data previously written to serial port
+  uInt16 sector = 0, numSectors = myCart.initSectors();
+  QProgressDialog progress("Verifying ROM...", QString(), 0, numSectors, this);
+  progress.setWindowModality(Qt::WindowModal);
+  progress.setMinimumDuration(0);
+  try
+  {
+    for(sector = 0; sector < numSectors; ++sector)
+    {
+      myCart.verifyNextSector(myManager.port());
+      progress.setValue(sector);
+    }
+  }
+  catch(const char* msg)
+  {
+    cout << msg << endl;
+  }
+
+  if(sector == numSectors)
+  {
+    progress.setValue(numSectors);
+    myStatus->setText("Verified download of " + QString::number(sector) + " sectors.");
+  }
+  else
+    myStatus->setText("Verify failure on sector " + QString::number(sector) + ".");
+
+  QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -379,8 +428,8 @@ void KrokComWindow::loadROM(const QString& file)
   ui->downloadButton->setDisabled(true);  ui->actDownloadROM->setDisabled(true);
   ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
 
-  // Create a single-load cart
-  myCart.createSingle(file.toStdString());
+  // Create a cart from the given filename
+  myCart.create(file.toStdString());
 
   if(myCart.isValid())
   {
@@ -398,7 +447,10 @@ void KrokComWindow::loadROM(const QString& file)
       slotDownloadROM();
   }
   else
+  {
     myStatus->setText("Invalid cartridge.");
+    QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
+  }
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -433,4 +485,11 @@ void KrokComWindow::assignToQPButton(QPushButton* button, int id,
       s.setValue(key, info.canonicalFilePath());
     s.endGroup();
   }
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotShowDefaultMsg()
+{
+  // TODO - check which tab is activated and customize message
+  myStatus->setText(myKrokCartMessage);
 }
