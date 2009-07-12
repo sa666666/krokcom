@@ -78,7 +78,7 @@ class SerialPort
 
       @return  The ACK read (0 indicates error)
     */
-    virtual uInt8 waitForAck() = 0;
+    virtual uInt8 waitForAck(uInt32 wait = 500) = 0;
 
     /**
       Get all valid serial ports detected on this system.

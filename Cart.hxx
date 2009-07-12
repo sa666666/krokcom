@@ -19,6 +19,8 @@
 
 #define MAXCARTSIZE 512*1024
 
+#include <vector>
+
 #include "bspf.hxx"
 
 #include "BSType.hxx"
@@ -39,11 +41,19 @@ class Cart
 
   public:
     /**
-      Loads cartridge data from the given filename, creating a 'single'
-      cart.  The bankswitch type is autodetected if type is "".
+      Loads cartridge data from the given filename, creating a cart.
+      The bankswitch type is autodetected if type is "".
       The filename should exist and be readable.
     */
-    bool createSingle(const string& filename, const string& type = "");
+    bool create(const string& filename, const string& type = "");
+
+    /**
+      Creates a single ROM file comprised of the given files.
+      This will be a 'multi-cart' ROM, consisting of each of the separate
+      ROMs, all with the same bankswitching scheme.
+    */
+    static bool createMultiFile(const string& romfile, const string& type,
+                                const vector<string>& filenames);
 
     //////////////////////////////////////////////////////////////////
     //  The following two methods act as an iterator through all the
@@ -51,9 +61,13 @@ class Cart
     //////////////////////////////////////////////////////////////////
     /**
       Initializes the sector iterator to the beginning of the list,
-      in preparation for multiple calls to writeNextSector().
+      in preparation for multiple calls to writeNextSector() or
+      verifyNextSector().
 
-      @return  The number of sectors that need to be written
+      NOTE: After calling initSectors(), DO NOT mix calls to
+            writeNextSector() and verifyNextSector().
+
+      @return  The number of sectors that need to be accessed
     */
     uInt16 initSectors();
 
@@ -61,10 +75,25 @@ class Cart
       Write the next sector in the iterator to the serial port,
       returning the actual sector number that was written.
 
+      NOTE: After calling initSectors(), DO NOT mix calls to
+            writeNextSector() and verifyNextSector().
+
       @return  The sector number written; an exception is thrown
                on any errors
     */
     uInt16 writeNextSector(SerialPort& port);
+
+    /**
+      Read and verify the next sector in the iterator from the serial port,
+      returning the actual sector number that was verified.
+
+      NOTE: After calling initSectors(), DO NOT mix calls to
+            writeNextSector() and verifyNextSector().
+
+      @return  The sector number verified; an exception is thrown
+               on any errors
+    */
+    uInt16 verifyNextSector(SerialPort& port);
 
     /** Accessor and mutator for bankswitch type. */
     BSType getBSType()            { return myType; }
@@ -91,10 +120,14 @@ class Cart
                  const string& type);
 
     /**
-      Write the given sector to the serial port; write() uses this to send
-      data to the port in pieces.
+      Write the given sector to the serial port.
     */
     bool downloadSector(uInt32 sector, SerialPort& port);
+
+    /**
+      Read and verify the given sector from the serial port.
+    */
+    bool verifySector(uInt32 sector, SerialPort& port);
 
   private:
     uInt8  myCart[MAXCARTSIZE];

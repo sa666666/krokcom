@@ -37,12 +37,20 @@ Cart::Cart()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool Cart::createSingle(const string& filename, const string& type)
+bool Cart::create(const string& filename, const string& type)
 {
   memset(myCart, 0, MAXCARTSIZE);
   myCartSize = readFile(filename, myCart, MAXCARTSIZE, type);
   myIsValid = myCartSize > 0;
   return myIsValid;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool Cart::createMultiFile(const string& romfile, const string& type,
+                           const vector<string>& filenames)
+{
+
+  return false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,9 +89,36 @@ uInt16 Cart::writeNextSector(SerialPort& port)
   uInt32 retry = 0;
   bool status;
   while(!(status = downloadSector(sector, port)) && retry++ < myRetry)
-    cout << "Transmission of sector " <<  sector << " failed, retry " << retry << endl;
+    cout << "Write transmission of sector " <<  sector << " failed, retry " << retry << endl;
   if(!status)
     throw "write: failed max retries";
+
+  myCurrentSector++;
+  return sector;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+uInt16 Cart::verifyNextSector(SerialPort& port)
+{
+  if(!myIsValid)
+    throw "verify: Invalid cart";
+  else if(myCurrentSector == myNumSectors)
+    throw "verify: All sectors already verified";
+
+  // Handle 3F and 3E carts, which are a little different from the rest
+  // There are two ranges of sectors; the second starts once we past the
+  // cart size
+  if((myType == BS_3F || myType == BS_3E) &&
+      myCurrentSector == myCartSize / 256)
+    myCurrentSector = 2040;
+
+  uInt16 sector = myCurrentSector;
+  uInt32 retry = 0;
+  bool status;
+  while(!(status = verifySector(sector, port)) && retry++ < myRetry)
+    cout << "Read transmission of sector " <<  sector << " failed, retry " << retry << endl;
+  if(!status)
+    throw "verify: failed max retries";
 
   myCurrentSector++;
   return sector;
@@ -216,4 +251,63 @@ bool Cart::downloadSector(uInt32 sector, SerialPort& port)
     cout << "Undefined response " << (int)result << " for sector " << sector << endl;
     return false;
   }
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool Cart::verifySector(uInt32 sector, SerialPort& port)
+{
+  uInt8 buffer[257];
+
+  uInt8 chksum = 0;
+  buffer[0] = 1;                             // Mark start of command
+  buffer[1] = 1;                             // Command # for 'Read Sector'
+  buffer[2] = (uInt8)((sector >> 8) & 0xff); // Sector # Hi-Byte
+  buffer[3] = (uInt8)sector;                 // Sector # Lo-Byte
+  chksum ^= buffer[2];
+  chksum ^= buffer[3];
+  buffer[4] = chksum;                        // Chksum
+
+  // Write command to serial port
+  if(port.writeBytes(buffer, 5) != 5)
+  {
+    cout << "Write transmission error of command in verifySector" << endl;
+    return false;
+  }
+
+  // Check return code of command write
+  uInt8 result = port.waitForAck();
+
+  // Check return code
+  if(result == 0x00)
+  {
+    cout << "Checksum Error for verify sector " << sector << endl;
+    return false;
+  }
+  else if(result != 0xfe)
+  {
+    cout << "Undefined response " << (int)result << " for sector " << sector << endl;
+    return false;
+  }
+
+  // Now it's safe to read the sector (256 data bytes + 1 chksum)
+  int BytesRead = 0;
+  do
+  {
+    uInt8 data = 0;
+    if(port.readBytes(&data, 1) == 1)
+      buffer[BytesRead++] = data;
+  }
+  while(BytesRead < 257);
+  port.writeBytes(buffer, 1);  // Send an Ack
+
+  // Make sure the data chksum matches
+  chksum = 0;
+  for(int i = 0; i < 256; ++i)
+    chksum ^= buffer[i];
+  if(chksum != buffer[256])
+    return false;
+
+  // Now that we have a valid sector read back from the device,
+  // compare to the actual data to make sure they match
+  return memcmp(myCart + sector*256, &buffer, 256) == 0;
 }

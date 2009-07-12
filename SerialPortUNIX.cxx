@@ -90,14 +90,14 @@ int SerialPortUNIX::writeBytes(const uInt8* data, uInt32 size)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt8 SerialPortUNIX::waitForAck()
+uInt8 SerialPortUNIX::waitForAck(uInt32 wait)
 {
   uInt8 result = 0;
   for(int pass = 0; pass < 100; ++pass)
   {
     if(readBytes(&result, 1) == 1)
       break;
-    usleep(500);
+    usleep(wait);
   }
   return result;
 }

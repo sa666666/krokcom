@@ -33,12 +33,16 @@ class SerialPortManager
     SerialPortManager();
     ~SerialPortManager();
 
+    void setDefaultPort(const string& port);
     void connectKrokCart();
     bool krokCartAvailable();
 
     SerialPort& port();
     const string& portName();
     const string& versionID();
+
+  private:
+    bool connect(const string& device);
 
   private:
   #if defined(UNIX)

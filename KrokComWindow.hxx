@@ -38,6 +38,9 @@ Q_OBJECT
     KrokComWindow(QWidget* parent = 0);
     ~KrokComWindow();
 
+  public:
+    SerialPortManager& portManager() { return myManager; }
+
   protected:
     void closeEvent(QCloseEvent* event);
     bool eventFilter(QObject* object, QEvent* event);
@@ -58,6 +61,7 @@ Q_OBJECT
     void slotSetBSType(const QString& text);
     void slotAbout();
     void slotQPButtonClicked(int id);
+    void slotShowDefaultMsg();
 
   private:
     Ui::KrokComWindow* ui;

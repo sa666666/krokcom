@@ -23,7 +23,7 @@
 #include "SerialPortManager.hxx"
 #include "KrokComWindow.hxx"
 
-void runCommandlineApp(int ac, char* av[])
+void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
 {
   string bstype = "", tvformat = "", romfile = "";
 
@@ -37,8 +37,7 @@ void runCommandlineApp(int ac, char* av[])
       romfile = av[i];
   }
 
-  SerialPortManager manager;
-  manager.connectKrokCart();
+  SerialPortManager& manager = win.portManager();
   if(manager.krokCartAvailable())
   {
     cout << "KrokCart: \'" << manager.versionID() << "\'"
@@ -54,7 +53,7 @@ void runCommandlineApp(int ac, char* av[])
   Cart cart;
 
   // Create a new single-load cart
-  cart.createSingle(romfile, bstype);
+  cart.create(romfile, bstype);
 
   // Write to serial port
   if(cart.isValid())
@@ -86,17 +85,20 @@ int main(int ac, char* av[])
     return 0;
   }
 
-  // Launch GUI
-  if(ac == 1)
+  // The application and window needs to be created even if we're using
+  // commandline mode, since the settings are controlled by a QSettings
+  // object which needs a Qt context.
+  QApplication app(ac, av);
+  KrokComWindow win;
+
+  if(ac == 1)  // Launch GUI
   {
-    QApplication app(ac, av);
-    KrokComWindow win;
     win.show();
     return app.exec();
   }
   else  // Assume we're working from the commandline
   {
-    runCommandlineApp(ac, av);
+    runCommandlineApp(win, ac, av);
   }
 
   return 0;
