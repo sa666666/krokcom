@@ -26,6 +26,15 @@
   @author Bradford W. Mott
 */
 
+/** What system are we using? */
+#if defined(WIN32) || defined(_WIN32)
+  #define BSPF_WIN32
+#elif defined(__APPLE__) || defined(MAC_OS_X)
+  #define BSPF_MAC_OSX
+#else
+  #define BSPF_UNIX
+#endif
+
 // Types for 8-bit signed and unsigned integers
 typedef signed char Int8;
 typedef unsigned char uInt8;
