@@ -1,0 +1,165 @@
+//============================================================================
+//
+//  K   K  RRRR    OOO   K   K   CCCC   OOO   M   M
+//  K  K   R   R  O   O  K  K   C      O   O  MM MM
+//  KKK    RRRR   O   O  KKK    C      O   O  M M M  "Krokodile Cart software"
+//  K  K   R R    O   O  K  K   C      O   O  M   M
+//  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
+//
+// Copyright (c) 2009 by Stephen Anthony <stephena@users.sourceforge.net>
+//
+// See the file "License.txt" for information on usage and redistribution of
+// this file, and for a DISCLAIMER OF ALL WARRANTIES.
+//
+// $Id$
+//============================================================================
+
+#include "bspf.hxx"
+
+#if defined(BSPF_WIN32)
+
+#undef UNICODE
+#include <windows.h>
+
+#include "SerialPortWin32.hxx"
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+SerialPortWin32::SerialPortWin32()
+  : SerialPort(),
+    myHandle(NULL)
+{
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+SerialPortWin32::~SerialPortWin32()
+{
+  closePort();
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool SerialPortWin32::openPort(const string& device)
+{
+  closePort();  // paranoia: make sure port is in consistent state
+
+  if(!myHandle)
+  {
+    myHandle = CreateFile(device.c_str(), GENERIC_READ|GENERIC_WRITE, 0,
+                          NULL, OPEN_EXISTING, 0, NULL);
+
+    if(myHandle)
+    {
+      DCB dcb;
+
+      FillMemory(&dcb, sizeof(dcb), 0);
+      dcb.DCBlength = sizeof(dcb);
+      if(!BuildCommDCB("115200,n,8,1", &dcb))
+        return false;
+
+      memset(&dcb, 0, sizeof(DCB));
+      dcb.BaudRate = CBR_19200;
+      dcb.ByteSize = 8;
+      dcb.Parity = NOPARITY;
+      dcb.StopBits = ONESTOPBIT;
+      SetCommState(myHandle, &dcb);
+    }
+    else 
+      return false;
+  }
+  return true;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void SerialPortWin32::closePort()
+{
+  if(myHandle)
+  {
+    CloseHandle(myHandle);
+    myHandle = NULL;
+  }
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool SerialPortWin32::isOpen()
+{
+  return myHandle != NULL;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+int SerialPortWin32::readBytes(uInt8* data, uInt32 size)
+{
+return 0;
+//  return myHandle ? read(myHandle, data, size) : -1;
+// TODO - implement this
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+int SerialPortWin32::writeBytes(const uInt8* data, uInt32 size)
+{
+//  return myHandle ? write(myHandle, data, size) : -1;
+// TODO - implement this
+  if(myHandle)
+  {
+    DWORD written;
+    return WriteFile(myHandle, data, 1, &written, 0) == TRUE;
+  }
+  return false;
+
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+uInt8 SerialPortWin32::waitForAck(uInt32 wait)
+{
+return 0;
+// TODO - implement this
+/*
+  uInt8 result = 0;
+  for(int pass = 0; pass < 100; ++pass)
+  {
+    if(readBytes(&result, 1) == 1)
+      break;
+    usleep(wait);
+  }
+  return result;
+*/
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const StringList& SerialPortWin32::getPortNames()
+{
+  myPortNames.clear();
+
+// TODO - implement this
+/*
+  // First get all possible devices in the '/dev' directory
+  DIR* dirp = opendir("/dev");
+  if(dirp != NULL)
+  {
+    // Search for files matching common serial port device names
+    struct dirent* dp;
+    while ((dp = readdir(dirp)) != NULL)
+    {
+      const char* ptr = dp->d_name;
+
+      if((strstr(ptr, "ttyS") == ptr) ||  // linux Serial Ports
+         (strstr(ptr, "ttyUSB") == ptr))  // for USB frobs
+      {
+        string device = "/dev/";
+        device += ptr;
+
+        if(openPort(device))
+        {
+          uInt8 c;
+          int n = readBytes(&c, 1);
+          if(n >= 0)
+            myPortNames.push_back(device);
+        }
+        closePort();
+      }
+    }
+    closedir(dirp);
+  }
+*/
+  return myPortNames;
+}
+
+#endif // BSPF_WIN32

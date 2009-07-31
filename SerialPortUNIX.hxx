@@ -1,4 +1,4 @@
-//============================================================================
+//===========================================================================
 //
 //  K   K  RRRR    OOO   K   K   CCCC   OOO   M   M
 //  K  K   R   R  O   O  K  K   C      O   O  MM MM
@@ -13,6 +13,10 @@
 //
 // $Id$
 //============================================================================
+
+#include "bspf.hxx"
+
+#if defined(BSPF_UNIX)
 
 #ifndef __SERIALPORT_UNIX_HXX
 #define __SERIALPORT_UNIX_HXX
@@ -86,3 +90,5 @@ class SerialPortUNIX : public SerialPort
 };
 
 #endif
+
+#endif // BSPF_UNIX

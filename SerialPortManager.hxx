@@ -17,14 +17,16 @@
 #ifndef __SERIALPORTMANAGER_HXX
 #define __SERIALPORTMANAGER_HXX
 
-// TODO - this should come from the build environment
-#define UNIX 1
+#include "bspf.hxx"
 
-
-#if defined(UNIX)
-  #include "SerialPortUNIX.hxx"
-#elif defined(MAC_OSX)
+#if defined(BSPF_WIN32)
+  #include "SerialPortWin32.hxx"
+#elif defined(BSPF_MAC_OSX)
   #include "SerialPortMACOSX.hxx"
+#elif defined(BSPF_UNIX)
+  #include "SerialPortUNIX.hxx"
+#else
+  #error Unsupported platform!
 #endif
 
 class SerialPortManager
@@ -45,12 +47,12 @@ class SerialPortManager
     bool connect(const string& device);
 
   private:
-  #if defined(UNIX)
-    SerialPortUNIX myPort;
-  #elif defined(MAC_OSX)
+  #if defined(BSPF_WIN32)
+    SerialPortWin32 myPort;
+  #elif defined(BSPF_MAC_OSX)
     SerialPortMACOSX myPort;
-  #else
-    #error Unsupported platform!
+  #elif defined(BSPF_UNIX)
+    SerialPortUNIX myPort;
   #endif
 
     bool myFoundKrokCart;
