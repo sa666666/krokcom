@@ -9,7 +9,8 @@ SOURCES += main.cxx \
     CartDetector.cxx \
     SerialPortManager.cxx \
     SerialPortUNIX.cxx \
-    SerialPortWin32.cxx
+    SerialPortWin32.cxx \
+    SerialPortMACOSX.cxx
 HEADERS += KrokComWindow.hxx \
     bspf.hxx \
     BSType.hxx \
@@ -18,6 +19,7 @@ HEADERS += KrokComWindow.hxx \
     SerialPortManager.hxx \
     SerialPort.hxx \
     SerialPortUNIX.hxx \
-    SerialPortWin32.hxx
+    SerialPortWin32.hxx \
+    SerialPortMACOSX.hxx
 FORMS += krokcomwindow.ui
 RESOURCES += resources.qrc
