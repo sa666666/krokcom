@@ -23,3 +23,7 @@ HEADERS += KrokComWindow.hxx \
     SerialPortMACOSX.hxx
 FORMS += krokcomwindow.ui
 RESOURCES += resources.qrc
+
+macx {
+  LIBS += -framework CoreFoundation -framework IOKit
+}

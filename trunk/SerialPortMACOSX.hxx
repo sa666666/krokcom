@@ -21,6 +21,14 @@
 #ifndef __SERIALPORT_MACOSX_HXX
 #define __SERIALPORT_MACOSX_HXX
 
+#include	<sys/filio.h>
+#include	<sys/ioctl.h>
+#include	<CoreFoundation/CoreFoundation.h>
+
+#include	<IOKit/IOKitLib.h>
+#include	<IOKit/serial/IOSerialKeys.h>
+#include	<IOKit/IOBSD.h>
+
 #include "SerialPort.hxx"
 
 /**
@@ -83,6 +91,10 @@ class SerialPortMACOSX : public SerialPort
       Get all valid serial ports detected on this system.
     */
     const StringList& getPortNames();
+
+  private:
+    kern_return_t createSerialIterator(io_iterator_t* serialIterator);
+    char* getRegistryString(io_object_t sObj, char* propName);
 
   private:
     // File descriptor for serial connection
