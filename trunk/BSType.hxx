@@ -51,7 +51,15 @@ enum BSType
   BS_AR   = 21,   // not supported at all
   BS_EFSC = 22,
   BS_0840 = 23,
-  BS_NONE
+
+  BS_DPC  = 100,  // items from this point on will probably
+  BS_4A50 = 101,  // never be implemented
+  BS_X07  = 102,
+  BS_SB   = 103,
+  BS_MC   = 104,
+
+  BS_NONE = 1000,
+  BS_AUTO = 1001,
 };
 
 class Bankswitch
@@ -85,7 +93,13 @@ class Bankswitch
         case BS_AR:   return "AR";
         case BS_EFSC: return "EFSC";
         case BS_0840: return "0840";
-        case BS_NONE: return "NONE";
+        case BS_DPC:  return "DPC";
+        case BS_4A50: return "4A50";
+        case BS_X07:  return "X07";
+        case BS_SB:   return "SB";
+        case BS_MC:   return "MC";
+        case BS_NONE: return "NONE/UNKNOWN";
+        case BS_AUTO: return "AUTO";
       }
       return "NONE";
     }
@@ -94,7 +108,7 @@ class Bankswitch
     {
       string s = BSPF_tolower(name);
 
-      if(s == "4k") 	    return BS_4K;
+      if(s == "4k") 	      return BS_4K;
       else if(s == "f8")    return  BS_F8;
       else if(s == "f6")    return  BS_F6;
       else if(s == "f4")    return  BS_F4;
@@ -118,6 +132,12 @@ class Bankswitch
       else if(s == "ar")    return  BS_AR;
       else if(s == "efsc")  return  BS_EFSC;
       else if(s == "0840")  return  BS_0840;
+      else if(s == "dpc")   return  BS_DPC;
+      else if(s == "4a50")  return  BS_4A50;
+      else if(s == "x07")   return  BS_X07;
+      else if(s == "sb")    return  BS_SB;
+      else if(s == "mc")    return  BS_MC;
+      else if(s == "auto")  return  BS_AUTO;
       else                  return  BS_NONE;
     }
 };

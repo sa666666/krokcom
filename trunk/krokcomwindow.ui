@@ -269,6 +269,11 @@ supported by the Krok Cart.</string>
             </item>
             <item>
              <property name="text">
+              <string>4A50* (64K 4A50 + ram)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
               <string>4K (4K Atari)</string>
              </property>
             </item>
@@ -280,6 +285,11 @@ supported by the Krok Cart.</string>
             <item>
              <property name="text">
               <string>CV (Commvid + RAM)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>DPC* (Pitfall II)</string>
              </property>
             </item>
             <item>
@@ -300,6 +310,11 @@ supported by the Krok Cart.</string>
             <item>
              <property name="text">
               <string>EFSC (H. Runner + RAM)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>F0* (Dynacom Megaboy)</string>
              </property>
             </item>
             <item>
@@ -334,7 +349,7 @@ supported by the Krok Cart.</string>
             </item>
             <item>
              <property name="text">
-              <string>FASC (CBS RAM Plus)</string>
+              <string>FA (CBS RAM Plus)</string>
              </property>
             </item>
             <item>
@@ -344,12 +359,22 @@ supported by the Krok Cart.</string>
             </item>
             <item>
              <property name="text">
-              <string>MB* (Dynacom Megaboy)</string>
+              <string>MC* (C. Wilkson Megacart)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>SB* (128-256K SUPERbank)</string>
              </property>
             </item>
             <item>
              <property name="text">
               <string>UA (8K UA Ltd.)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>X07* (64K AtariAge)</string>
              </property>
             </item>
             <item>
