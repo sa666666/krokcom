@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=KrokCom
+Comment=A programming tool for the Atari 2600 Krokodile Cartridge
+GenericName=Krokodile Commander for UNIX
+Exec=krokcom
+Icon=/usr/share/icons/krokcom.png
+Terminal=false
+Type=Application
+Categories=Utility;

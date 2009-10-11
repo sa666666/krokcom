@@ -3,5 +3,7 @@
         <file>pics/romchip.png</file>
         <file>pics/ledoff.png</file>
         <file>pics/cart.png</file>
+        <file>pics/ledon.png</file>
+        <file>pics/appicon.png</file>
     </qresource>
 </RCC>

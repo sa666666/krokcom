@@ -35,7 +35,11 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Q Krokodile Commander</string>
+   <string>Krokodile Commander for UNIX</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/icons/pics/appicon.png</normaloff>:/icons/pics/appicon.png</iconset>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>false</bool>
@@ -138,8 +142,11 @@
               <height>29</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Copy and paste a single-load ROM image.</string>
+            </property>
             <property name="readOnly">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="tabChangesFocus" stdset="0">
              <bool>true</bool>
@@ -148,6 +155,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="openRomButton">
+            <property name="toolTip">
+             <string>Select a single-load ROM image.</string>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
@@ -230,6 +240,12 @@
               <width>200</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Override the bankswitching scheme
+for the currently selected ROM image.
+Schemes marked with (*) are not currently
+supported by the Krok Cart.</string>
             </property>
             <item>
              <property name="text">
@@ -393,6 +409,10 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Verify the most recent download
+to the Krok Cart.</string>
+            </property>
             <property name="text">
              <string>Verify</string>
             </property>
@@ -405,6 +425,10 @@
               <width>150</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Download the currently selected ROM
+image to the Krok Cart.</string>
             </property>
             <property name="text">
              <string>Download</string>
@@ -421,6 +445,12 @@
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
             <widget class="QPushButton" name="qp1Button">
+             <property name="minimumSize">
+              <size>
+               <width>157</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="contextMenuPolicy">
               <enum>Qt::DefaultContextMenu</enum>
              </property>
@@ -435,6 +465,12 @@ Left-click to use the chosen ROM.</string>
            </item>
            <item row="0" column="3">
             <widget class="QPushButton" name="qp4Button">
+             <property name="minimumSize">
+              <size>
+               <width>157</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="toolTip">
               <string>Right-click to select ROM Image.
 Left-click to use the chosen ROM.</string>
@@ -578,6 +614,12 @@ Left-click to use the chosen ROM.</string>
            </item>
            <item row="0" column="2">
             <widget class="QPushButton" name="qp3Button">
+             <property name="minimumSize">
+              <size>
+               <width>157</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="toolTip">
               <string>Right-click to select ROM Image.
 Left-click to use the chosen ROM.</string>
@@ -589,6 +631,12 @@ Left-click to use the chosen ROM.</string>
            </item>
            <item row="0" column="1">
             <widget class="QPushButton" name="qp2Button">
+             <property name="minimumSize">
+              <size>
+               <width>157</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="toolTip">
               <string>Right-click to select ROM Image.
 Left-click to use the chosen ROM.</string>

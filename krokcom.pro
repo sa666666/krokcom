@@ -1,16 +1,13 @@
 # -------------------------------------------------
 # Project created by QtCreator 2009-05-21T12:40:28
 # -------------------------------------------------
-TARGET = krokcom
+TARGET = KrokCom
 TEMPLATE = app
 SOURCES += main.cxx \
     KrokComWindow.cxx \
     Cart.cxx \
     CartDetector.cxx \
-    SerialPortManager.cxx \
-    SerialPortUNIX.cxx \
-    SerialPortWin32.cxx \
-    SerialPortMACOSX.cxx
+    SerialPortManager.cxx
 HEADERS += KrokComWindow.hxx \
     bspf.hxx \
     BSType.hxx \
@@ -18,12 +15,41 @@ HEADERS += KrokComWindow.hxx \
     CartDetector.hxx \
     SerialPortManager.hxx \
     SerialPort.hxx \
-    SerialPortUNIX.hxx \
-    SerialPortWin32.hxx \
-    SerialPortMACOSX.hxx
+    FindKrokThread.hxx \
+    Version.hxx
 FORMS += krokcomwindow.ui
 RESOURCES += resources.qrc
-
+unix:!macx {
+    SOURCES += SerialPortUNIX.cxx
+    HEADERS += SerialPortUNIX.hxx
+    TARGET = krokcom
+    target.path = /usr/bin
+    docs.path = /usr/share/doc/krokcom
+    docs.files = docs/* \
+        Announce.txt \
+        Changes.txt \
+        Copyright.txt \
+        License.txt \
+        Readme.txt
+    arm.path = /usr/share/krokcom
+    arm.files = arm/*
+    desktop.path = /usr/share/applications
+    desktop.files = unix/krokcom.desktop
+    icon.path = /usr/share/icons
+    icon.files = unix/krokcom.png
+    INSTALLS += target \
+        icon \
+        docs \
+        arm \
+        desktop
+}
 macx {
-  LIBS += -framework CoreFoundation -framework IOKit
+    SOURCES += SerialPortMACOSX.cxx
+    HEADERS += SerialPortMACOSX.hxx
+    LIBS += -framework \
+        CoreFoundation \
+        -framework \
+        IOKit
+    ICON = macosx/Krok_icon.icns
+    CONFIG += x86 ppc
 }

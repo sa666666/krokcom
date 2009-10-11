@@ -24,6 +24,7 @@
 
 #include "Cart.hxx"
 #include "SerialPortManager.hxx"
+#include "FindKrokThread.hxx"
 #include "ui_krokcomwindow.h"
 
 namespace Ui
@@ -54,6 +55,8 @@ Q_OBJECT
 
   private slots:
     void slotConnectKrokCart();
+    void slotUpdateFindKrokStatus();
+
     void slotOpenROM();
     void slotDownloadROM();
     void slotVerifyROM();
@@ -65,6 +68,7 @@ Q_OBJECT
 
   private:
     Ui::KrokComWindow* ui;
+    FindKrokThread* myFindKrokThread;
 
     Cart myCart;
     SerialPortManager myManager;
@@ -75,6 +79,7 @@ Q_OBJECT
     QProgressBar* myProgress;
 
     QString myKrokCartMessage;
+    bool myDownloadInProgress;
 };
 
 #endif
