@@ -308,6 +308,7 @@ void KrokComWindow::slotDownloadROM()
   // Write to serial port
   uInt16 sector = 0, numSectors = myCart.initSectors();
   QProgressDialog progress("Downloading ROM...", QString(), 0, numSectors, this);
+  progress.setWindowIcon(QPixmap(":icons/pics/appicon.png"));
   progress.setWindowModality(Qt::WindowModal);
   progress.setMinimumDuration(0);
   try
@@ -368,6 +369,7 @@ void KrokComWindow::slotVerifyROM()
   // Verify data previously written to serial port
   uInt16 sector = 0, numSectors = myCart.initSectors();
   QProgressDialog progress("Verifying ROM...", QString(), 0, numSectors, this);
+  progress.setWindowIcon(QPixmap(":icons/pics/appicon.png"));
   progress.setWindowModality(Qt::WindowModal);
   progress.setMinimumDuration(0);
   try

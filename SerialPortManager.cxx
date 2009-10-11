@@ -24,6 +24,8 @@ SerialPortManager::SerialPortManager()
     myPortName(""),
     myVersionID("")
 {
+  myPort.setBaud(115200);
+  myPort.setControlSwap(false);
   myPort.closePort();
 }
 
@@ -92,13 +94,13 @@ bool SerialPortManager::connect(const string& device)
     // -------------------------------------------------------------
     // Search for KrokCart device
     // -------------------------------------------------------------
-    if(myPort.writeBytes(tx, 2) < 0)
+    if(myPort.sendBlock(tx, 2) == 0)
     {
       myPort.closePort();
       return false;
     }
     // Wait for device to respond to command (get ACK)
-    rx[0] = myPort.waitForAck();
+    myPort.receiveBlock(rx, 1);
 
     // -------------------------------------------------------------
     // If ACK is not sent, the device is not present
@@ -107,12 +109,12 @@ bool SerialPortManager::connect(const string& device)
     int BytesRead = 0;
     do
     {
-      BytesRead = myPort.readBytes(rx, 1);
+      BytesRead = myPort.receiveBlock(rx, 1);
       ver[VCnt++] = rx[0];
     }
     while(rx[0] != 0 && VCnt < 100 && BytesRead > 0);
     if(VCnt > 10)
-      myPort.writeBytes(tx, 1);  // Send an Ack
+      myPort.sendBlock(tx, 1);  // Send an Ack
 
     myPort.closePort();
 
