@@ -49,7 +49,7 @@ bool Cart::create(const string& filename, const string& type)
 bool Cart::createMultiFile(const string& romfile, const string& type,
                            const vector<string>& filenames)
 {
-
+  // TODO - implement this
   return false;
 }
 
@@ -165,7 +165,7 @@ int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize,
     MDPrint (digest);
   }
   */
-  if(type == "")
+  if(myType == BS_AUTO || type == "")
   {
     myType = autodetectType(cartridge, cartsize);
     cout << "Bankswitch type: " << Bankswitch::typeToName(myType)
@@ -184,6 +184,11 @@ int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize,
     case BS_FE:
     case BS_AR:
     case BS_NONE:
+    case BS_DPC:
+    case BS_4A50:
+    case BS_X07:
+    case BS_SB:
+    case BS_MC:
       cout << "Warning - The Krokodile Cartridge does not support this type of bank switching" << endl;
       break;
     default:

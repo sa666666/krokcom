@@ -32,6 +32,14 @@ class CartDetector
     /**
       Try to auto-detect the bankswitching type of the cartridge
 
+      @param rom  The file containing the ROM image
+      @return  The "best guess" for the cartridge type
+    */
+    static BSType autodetectType(const string& rom);
+
+    /**
+      Try to auto-detect the bankswitching type of the cartridge
+
       @param image  A pointer to the ROM image
       @param size   The size of the ROM image
       @return  The "best guess" for the cartridge type
@@ -113,6 +121,11 @@ class CartDetector
       Returns true if the image is probably an FE bankswitching cartridge
     */
     static bool isProbablyFE(const uInt8* image, uInt32 size);
+
+    /**
+      Returns true if the image is probably an X07 bankswitching cartridge
+    */
+    static bool isProbablyX07(const uInt8* image, uInt32 size);
 };
 
 #endif
