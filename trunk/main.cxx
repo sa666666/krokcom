@@ -22,6 +22,7 @@
 #include "SerialPort.hxx"
 #include "SerialPortManager.hxx"
 #include "KrokComWindow.hxx"
+#include "Version.hxx"
 
 void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
 {
@@ -38,6 +39,7 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
   }
 
   SerialPortManager& manager = win.portManager();
+  manager.connectKrokCart();
   if(manager.krokCartAvailable())
   {
     cout << "KrokCart: \'" << manager.versionID() << "\'"
@@ -70,6 +72,7 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
     }
     catch(const char* msg)
     {
+      cout << msg << endl;
     }
   }
   else
@@ -81,7 +84,22 @@ int main(int ac, char* av[])
 {
   if(ac == 2 && !strcmp(av[1], "-help"))
   {
-    cerr << "TODO: help" << endl;
+    cout << "Krokodile Commander for UNIX version " << KROK_VERSION << endl
+         << endl
+         << "Usage: krokcom [options ...] datafile" << endl
+         << "       Run without any options or datafile to use the graphical frontend" << endl
+         << "       Consult the manual for more in-depth information" << endl
+         << endl
+         << "Valid options are:" << endl
+         << endl
+//         << "  -bios       Treat the specified datafile as an EEPROM loader BIOS image" << endl
+//         << "              Otherwise, the datafile is treated as a ROM image instead" << endl
+         << "  -bs=[type]  Specify the bankswitching scheme for a ROM image (default is 'auto')" << endl
+         << "  -help       Displays the message you're now reading" << endl
+         << endl
+         << "This software is Copyright (c) 2009 Stephen Anthony, and is released" << endl
+         << "under the GNU GPL version 3." << endl
+         << endl;
     return 0;
   }
 
@@ -93,6 +111,8 @@ int main(int ac, char* av[])
 
   if(ac == 1)  // Launch GUI
   {
+    // Only start a 'connect' thread if we're in UI mode
+    win.connectKrokCart();
     win.show();
     return app.exec();
   }

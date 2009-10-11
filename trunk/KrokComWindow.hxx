@@ -41,6 +41,7 @@ Q_OBJECT
 
   public:
     SerialPortManager& portManager() { return myManager; }
+    void connectKrokCart() { slotConnectKrokCart(); }
 
   protected:
     void closeEvent(QCloseEvent* event);

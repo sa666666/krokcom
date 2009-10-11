@@ -74,9 +74,6 @@ KrokComWindow::KrokComWindow(QWidget* parent)
   QCoreApplication::setOrganizationName("KrokCom");
   QCoreApplication::setApplicationName("Krokodile Commander");
   readSettings();
-
-  // Find and connect to KrokCart (make sure ::readSettings() is called first)
-  slotConnectKrokCart();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -323,6 +320,7 @@ void KrokComWindow::slotDownloadROM()
   {
     cout << msg << endl;
   }
+  myDownloadInProgress = false;
 
   if(sector == numSectors)
   {
@@ -339,7 +337,6 @@ void KrokComWindow::slotDownloadROM()
     myStatus->setText("Download failure on sector " + QString::number(sector) + ".");
 
   QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
-  myDownloadInProgress = false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
