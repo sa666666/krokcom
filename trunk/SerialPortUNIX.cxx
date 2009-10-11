@@ -16,8 +16,6 @@
 
 #include "bspf.hxx"
 
-#if defined(BSPF_UNIX)
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -142,5 +140,3 @@ const StringList& SerialPortUNIX::getPortNames()
 
   return myPortNames;
 }
-
-#endif // BSPF_UNIX

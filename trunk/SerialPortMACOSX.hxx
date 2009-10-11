@@ -16,8 +16,6 @@
 
 #include "bspf.hxx"
 
-#if defined(BSPF_MAC_OSX)
-
 #ifndef __SERIALPORT_MACOSX_HXX
 #define __SERIALPORT_MACOSX_HXX
 
@@ -102,5 +100,3 @@ class SerialPortMACOSX : public SerialPort
 };
 
 #endif
-
-#endif // BSPF_MAC_OSX

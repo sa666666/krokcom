@@ -37,15 +37,21 @@ using namespace std;
 
 #include "KrokComWindow.hxx"
 #include "ui_krokcomwindow.h"
+#include "Version.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 KrokComWindow::KrokComWindow(QWidget* parent)
   : QMainWindow(parent),
     ui(new Ui::KrokComWindow),
-    myDetectedBSType(BS_NONE)
+    myDetectedBSType(BS_NONE),
+    myDownloadInProgress(false)
 {
   // Create GUI
   ui->setupUi(this);
+
+  // Create thread to find Krok cart
+  // We use a thread so the UI isn't blocked
+  myFindKrokThread = new FindKrokThread(myManager);
 
   // Set up signal/slot connections
   setupConnections();
@@ -130,6 +136,9 @@ void KrokComWindow::setupConnections()
   qpGroup->addButton(ui->qp15Button, 15); ui->qp15Button->installEventFilter(this);
   qpGroup->addButton(ui->qp16Button, 16); ui->qp16Button->installEventFilter(this);
   connect(qpGroup, SIGNAL(buttonClicked(int)), this, SLOT(slotQPButtonClicked(int)));
+
+  // Other
+  connect(myFindKrokThread, SIGNAL(finished()), this, SLOT(slotUpdateFindKrokStatus()));
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -168,8 +177,6 @@ void KrokComWindow::readSettings()
     assignToQPButton(ui->qp15Button, 15, s.value("button15", "").toString(), false);
     assignToQPButton(ui->qp16Button, 16, s.value("button16", "").toString(), false);
   s.endGroup();
-
-
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -231,7 +238,16 @@ bool KrokComWindow::eventFilter(QObject* object, QEvent* event)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotConnectKrokCart()
 {
-  myManager.connectKrokCart();
+  myStatus->setText("Searching for Krokodile Cart.");
+  myLED->setPixmap(QPixmap(":icons/pics/ledoff.png"));
+
+  // Start a thread to do this potentially time-consuming operation
+  myFindKrokThread->start();
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotUpdateFindKrokStatus()
+{
   if(myManager.krokCartAvailable())
   {
     myKrokCartMessage = "\'";
@@ -243,7 +259,7 @@ void KrokComWindow::slotConnectKrokCart()
   }
   else
   {
-    myKrokCartMessage = "Krokodile Cartridge not found.";
+    myKrokCartMessage = "Krokodile Cart not found.";
     myLED->setPixmap(QPixmap(":icons/pics/ledoff.png"));
   }
   myStatus->setText(myKrokCartMessage);
@@ -252,8 +268,12 @@ void KrokComWindow::slotConnectKrokCart()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotOpenROM()
 {
+  // Switch to 'ROM' tab
+  ui->tabWidget->setCurrentIndex(0);
+
+  QFileInfo info(ui->romFileEdit->text());
   QString file = QFileDialog::getOpenFileName(this,
-    tr("Select ROM Image"), "", tr("Atari 2600 ROM Image (*.bin *.a26)"));
+    tr("Select ROM Image"), info.absolutePath(), tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
 
   if(!file.isNull())
     loadROM(file);
@@ -262,19 +282,28 @@ void KrokComWindow::slotOpenROM()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotDownloadROM()
 {
+  if(myDownloadInProgress)
+    return;
+
   ui->verifyButton->setDisabled(true);  ui->actVerifyROM->setDisabled(true);
 
   if(!myManager.krokCartAvailable())
   {
-    myStatus->setText("Krokodile Cartridge not found.");
+    myDownloadInProgress = false;
+    myStatus->setText("Krokodile Cart not found.");
     return;
   }
   else if(!myCart.isValid())
   {
+    myDownloadInProgress = false;
     myStatus->setText("Invalid cartridge.");
     QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
     return;
   }
+
+  // Switch to 'ROM' tab
+  ui->tabWidget->setCurrentIndex(0);
+  myDownloadInProgress = true;
 
   // Write to serial port
   uInt16 sector = 0, numSectors = myCart.initSectors();
@@ -309,22 +338,32 @@ void KrokComWindow::slotDownloadROM()
     myStatus->setText("Download failure on sector " + QString::number(sector) + ".");
 
   QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
+  myDownloadInProgress = false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotVerifyROM()
 {
+  if(myDownloadInProgress)
+    return;
+
   if(!myManager.krokCartAvailable())
   {
-    myStatus->setText("Krokodile Cartridge not found.");
+    myDownloadInProgress = false;
+    myStatus->setText("Krokodile Cart not found.");
     return;
   }
   else if(!myCart.isValid())
   {
+    myDownloadInProgress = false;
     myStatus->setText("Invalid cartridge.");
     QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
     return;
   }
+
+  // Switch to 'ROM' tab
+  ui->tabWidget->setCurrentIndex(0);
+  myDownloadInProgress = true;
 
   // Verify data previously written to serial port
   uInt16 sector = 0, numSectors = myCart.initSectors();
@@ -353,6 +392,7 @@ void KrokComWindow::slotVerifyROM()
     myStatus->setText("Verify failure on sector " + QString::number(sector) + ".");
 
   QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
+  myDownloadInProgress = false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -388,17 +428,23 @@ void KrokComWindow::slotAbout()
 {
   ostringstream about;
   about << "<center>"
-        << "<p><b>Krokodile Commander for UNIX v0.1</b></p>"
-        << "<p>Copyright &copy; 2009 Stephen Anthony<br>"
-        << "<a href=\"mailto:stephena@users.sf.net\">stephena@users.sf.net</a></p>"
-        << "<p><a href=\"http://krokcom.sf.net\">http://krokcom.sf.net</a><p>"
-        << "<p>Based on the original Windows version<br>"
-        << "Copyright &copy; 2002-2009 <a href=\"mailto:Armin.Vogl@gmx.net\">Armin Vogl</a>"
-        << "<p>This software is released under the GNU GPLv2</p>"
-        << "</center>";
-
+        << "<p><b>Krokodile Commander for UNIX v" << KROK_VERSION << "</b></p>"
+        << "<p>Copyright &copy; 2009 <a href=\"mailto:stephena@users.sf.net\">Stephen Anthony</a><br>"
+        << "Check for updates at <a href=\"http://krokcom.sf.net\">http://krokcom.sf.net</a><p>"
+        << "<p>Based on the original <a href=\"http://www.arminvogl.de/KrokodileCartridge\">Windows version</a><br>"
+        << "Copyright &copy; 2002-2009 <a href=\"mailto:Armin.Vogl@gmx.net\">Armin Vogl</a></p>"
+        << "</center>"
+        << "<p>This&nbsp;software&nbsp;is&nbsp;released&nbsp;under&nbsp;the&nbsp;GNU&nbsp;GPLv3,<br>"
+        << "and&nbsp;includes&nbsp;code&nbsp;from&nbsp;the&nbsp;following&nbsp;projects:</p>"
+        << "<p></p>"
+        << "<p>"
+        << "&nbsp;&nbsp;&nbsp;JKrokcom&nbsp;:&nbsp;Preliminary&nbsp;Java&nbsp;port&nbsp;of&nbsp;KrokCom<br>"
+        << "&nbsp;&nbsp;&nbsp;HarmonyCart&nbsp;:&nbsp;UI&nbsp;code,&nbsp;icons&nbsp;and&nbsp;other&nbsp;images<br>"
+        << "&nbsp;&nbsp;&nbsp;Stella&nbsp;:&nbsp;bankswitch&nbsp;autodetection&nbsp;code<br>"
+        << "</p>";
   QMessageBox mb;
-  mb.setWindowTitle("Info about Krokodile Commander");
+  mb.setWindowTitle("Info about Krokodile Commander for UNIX");
+  mb.setWindowIcon(QPixmap(":icons/pics/appicon.png"));
   mb.setIconPixmap(QPixmap(":icons/pics/cart.png"));
   mb.setTextFormat(Qt::RichText);
   mb.setText(about.str().c_str());
