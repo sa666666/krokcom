@@ -19,9 +19,7 @@
 
 #include "bspf.hxx"
 
-#if defined(BSPF_WIN32)
-  #include "SerialPortWin32.hxx"
-#elif defined(BSPF_MAC_OSX)
+#if defined(BSPF_MAC_OSX)
   #include "SerialPortMACOSX.hxx"
 #elif defined(BSPF_UNIX)
   #include "SerialPortUNIX.hxx"
@@ -47,9 +45,7 @@ class SerialPortManager
     bool connect(const string& device);
 
   private:
-  #if defined(BSPF_WIN32)
-    SerialPortWin32 myPort;
-  #elif defined(BSPF_MAC_OSX)
+  #if defined(BSPF_MAC_OSX)
     SerialPortMACOSX myPort;
   #elif defined(BSPF_UNIX)
     SerialPortUNIX myPort;

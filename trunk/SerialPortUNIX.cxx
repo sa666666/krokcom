@@ -16,6 +16,12 @@
 
 #include "bspf.hxx"
 
+#if defined(__OpenBSD__)
+  #include <errno.h>
+#else
+  #include <sys/errno.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -45,20 +51,69 @@ SerialPortUNIX::~SerialPortUNIX()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool SerialPortUNIX::openPort(const string& device)
 {
-  closePort();  // paranoia: make sure port is in consistent state
-
   myHandle = open(device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
-  if(myHandle <= 0)
+  if(myHandle < 0)
     return false;
 
-  struct termios termios;
-  memset(&termios, 0, sizeof(struct termios));
-
-  termios.c_cflag = CREAD | CLOCAL;
-  termios.c_cflag |= B115200;
-  termios.c_cflag |= CS8;
+  // clear input & output buffers, then switch to "blocking mode"
+  tcflush(myHandle, TCOFLUSH);
   tcflush(myHandle, TCIFLUSH);
-  tcsetattr(myHandle, TCSANOW, &termios);
+  fcntl(myHandle, F_SETFL, fcntl(myHandle, F_GETFL) & ~O_NONBLOCK);
+
+  tcgetattr(myHandle, &myOldtio); // save current port settings
+
+  bzero(&myNewtio, sizeof(myNewtio));
+  myNewtio.c_cflag = CS8 | CLOCAL | CREAD;
+
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
+  if(cfsetspeed(&myNewtio, (speed_t)myBaud)
+  {
+    cerr << "ERROR: baudrate " << myBaud << " not supported" << endl;
+    return false;
+  }
+#else
+  #define NEWTERMIOS_SETBAUDRATE(bps) myNewtio.c_cflag |= bps;
+
+  switch (myBaud)
+  {
+#if defined (B1152000)
+    case 1152000: NEWTERMIOS_SETBAUDRATE(B1152000); break;
+#endif
+#if defined (B576000)
+    case  576000: NEWTERMIOS_SETBAUDRATE(B576000);  break;
+#endif
+#if defined (B230400)
+    case  230400: NEWTERMIOS_SETBAUDRATE(B230400);  break;
+#endif
+    case  115200: NEWTERMIOS_SETBAUDRATE(B115200);  break;
+    case   57600: NEWTERMIOS_SETBAUDRATE(B57600);   break;
+    case   38400: NEWTERMIOS_SETBAUDRATE(B38400);   break;
+    case   19200: NEWTERMIOS_SETBAUDRATE(B19200);   break;
+    case    9600: NEWTERMIOS_SETBAUDRATE(B9600);    break;
+    default:
+    {
+      cerr << "ERROR: unknown baudrate " << myBaud << endl;
+      return false;
+    }
+  }
+#endif
+
+  myNewtio.c_iflag = IGNPAR | IGNBRK | IXON | IXOFF;
+  myNewtio.c_oflag = 0;
+
+  // set input mode (non-canonical, no echo,...)
+  myNewtio.c_lflag = 0;
+
+  cfmakeraw(&myNewtio);
+  myNewtio.c_cc[VTIME] = 1;   /* inter-character timer used */
+  myNewtio.c_cc[VMIN]  = 0;   /* blocking read until 0 chars received */
+
+  tcflush(myHandle, TCIFLUSH);
+  if(tcsetattr(myHandle, TCSANOW, &myNewtio))
+  {
+    cerr << "Could not change serial port behaviour (wrong baudrate?)\n";
+    return false;
+  }
 
   return true;
 }
@@ -68,6 +123,10 @@ void SerialPortUNIX::closePort()
 {
   if(myHandle)
   {
+    tcflush(myHandle, TCOFLUSH);
+    tcflush(myHandle, TCIFLUSH);
+    tcsetattr(myHandle, TCSANOW, &myOldtio);
+
     close(myHandle);
     myHandle = 0;
   }
@@ -80,28 +139,78 @@ bool SerialPortUNIX::isOpen()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-int SerialPortUNIX::readBytes(uInt8* data, uInt32 size)
+uInt32 SerialPortUNIX::receiveBlock(void* answer, uInt32 max_size)
 {
-  return myHandle ? read(myHandle, data, size) : -1;
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-int SerialPortUNIX::writeBytes(const uInt8* data, uInt32 size)
-{
-  return myHandle ? write(myHandle, data, size) : -1;
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt8 SerialPortUNIX::waitForAck(uInt32 wait)
-{
-  uInt8 result = 0;
-  for(int pass = 0; pass < 100; ++pass)
+  uInt32 result = 0;
+  if(myHandle)
   {
-    if(readBytes(&result, 1) == 1)
-      break;
-    usleep(wait);
+    result = read(myHandle, answer, max_size);
+    if(result == 0)
+      timeoutTick();
   }
   return result;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+uInt32 SerialPortUNIX::sendBlock(const void* data, uInt32 size)
+{
+  return myHandle ? write(myHandle, data, size) : 0;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void SerialPortUNIX::setTimeout(uInt32 timeout_milliseconds)
+{
+  mySerialTimeoutCount = timeout_milliseconds / 100;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void SerialPortUNIX::clearBuffers()
+{
+  // Variables to store the current tty state, create a new one
+  struct termios origtty, tty;
+
+  // Store the current tty settings
+  tcgetattr(myHandle, &origtty);
+
+  // Flush input and output buffers
+  tty = origtty;
+  tcsetattr(myHandle, TCSAFLUSH, &tty);
+
+  // Reset the tty to its original settings
+  tcsetattr(myHandle, TCSADRAIN, &origtty);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void SerialPortUNIX::controlModemLines(bool DTR, bool RTS)
+{
+  // Handle whether to swap the control lines
+  if(myControlLinesSwapped)
+  {
+    bool tempRTS;
+    tempRTS = RTS;
+    RTS = DTR;
+    DTR = tempRTS;
+  }
+
+  int status;
+  if(ioctl(myHandle, TIOCMGET, &status) != 0)
+    cerr << "ioctl get failed, status = " << status << endl;
+
+  if (DTR) status |=  TIOCM_DTR;
+  else     status &= ~TIOCM_DTR;
+  if (RTS) status |=  TIOCM_RTS;
+  else     status &= ~TIOCM_RTS;
+
+  if (ioctl(myHandle, TIOCMSET, &status) != 0)
+    cerr << "ioctl set failed, status = " << status << endl;
+  if (ioctl(myHandle, TIOCMGET, &status) != 0)
+    cerr << "ioctl get failed, status = " << status << endl;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void SerialPortUNIX::sleepMillis(uInt32 milliseconds)
+{
+  usleep(milliseconds*1000); // convert to microseconds
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -128,7 +237,7 @@ const StringList& SerialPortUNIX::getPortNames()
         if(openPort(device))
         {
           uInt8 c;
-          int n = readBytes(&c, 1);
+          int n = receiveBlock(&c, 1);
           if(n >= 0)
             myPortNames.push_back(device);
         }

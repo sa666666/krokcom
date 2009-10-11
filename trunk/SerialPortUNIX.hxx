@@ -19,6 +19,8 @@
 #ifndef __SERIALPORT_UNIX_HXX
 #define __SERIALPORT_UNIX_HXX
 
+#include <termios.h>
+
 #include "SerialPort.hxx"
 
 /**
@@ -53,29 +55,56 @@ class SerialPortUNIX : public SerialPort
     bool isOpen();
 
     /**
-      Read byte(s) from the serial port.
+      Receives a buffer from the open com port. Returns all the characters
+      ready (waits for up to 'n' milliseconds before accepting that no more
+      characters are ready) or when the buffer is full. 'n' is system dependent,
+      see SerialTimeout routines.
 
-      @param data  Destination for the byte(s) read from the port
-      @return  The number of bytes read (-1 indicates error)
+      @param answer    Buffer to hold the bytes read from the serial port
+      @param max_size  The size of buffer pointed to by answer
+      @return  The number of bytes read
     */
-    int readBytes(uInt8* data, uInt32 size = 1);
+    uInt32 receiveBlock(void* answer, uInt32 max_size);
 
     /**
-      Write byte(s) to the serial port.
+      Write block of bytes to the serial port.
 
       @param data  The byte(s) to write to the port
-      @return  The number of bytes written (-1 indicates error)
+      @param size  The size of the block
+      @return  The number of bytes written
     */
-    int writeBytes(const uInt8* data, uInt32 size = 1);
+    uInt32 sendBlock(const void* data, uInt32 size);
 
     /**
-      Wait for acknowledgment from the serial port; currently,
-      this means retry a read 100 times while waiting ~500
-      microseconds between each attempt.
+      Sets (or resets) the timeout to the timout period requested.  Starts
+      counting to this period.  This timeout support is a little odd in that
+      the timeout specifies the accumulated deadtime waiting to read not the
+      total time waiting to read. They should be close enough to the same for
+      this use. Used by the serial input routines, the actual counting takes
+      place in receiveBlock.
 
-      @return  The ACK read (0 indicates error)
+      @param timeout_milliseconds  The time in milliseconds to use for timeout
     */
-    uInt8 waitForAck(uInt32 wait = 500);
+    void setTimeout(uInt32 timeout_milliseconds);
+
+    /**
+      Empty the serial port buffers.  Cleans things to a known state.
+    */
+    void clearBuffers();
+
+    /**
+      Controls the modem lines to place the microcontroller into various
+      states during the programming process.
+
+      @param DTR  The state to set the DTR line to
+      @param RTS  The state to set the RTS line to
+    */
+    void controlModemLines(bool DTR, bool RTS);
+
+    /**
+      Sleep the specified amount of time (in milliseconds).
+    */
+    void sleepMillis(uInt32 milliseconds);
 
     /**
       Get all valid serial ports detected on this system.
@@ -85,6 +114,8 @@ class SerialPortUNIX : public SerialPort
   private:
     // File descriptor for serial connection
     int myHandle;
+
+    struct termios myOldtio, myNewtio;
 };
 
 #endif
