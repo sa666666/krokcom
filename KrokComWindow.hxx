@@ -67,6 +67,10 @@ Q_OBJECT
     void slotQPButtonClicked(int id);
     void slotShowDefaultMsg();
 
+    void slotSetMCBSType(int id);
+    void slotMCOpenButtonClicked(int id);
+    void slotMCDeleteButtonClicked(int id);
+
   private:
     Ui::KrokComWindow* ui;
     FindKrokThread* myFindKrokThread;

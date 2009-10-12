@@ -29,6 +29,8 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QTimer>
+#include <QTableWidget>
+#include <QHeaderView>
 
 #include <iostream>
 #include <sstream>
@@ -37,6 +39,7 @@ using namespace std;
 
 #include "KrokComWindow.hxx"
 #include "ui_krokcomwindow.h"
+#include "CartDetector.hxx"
 #include "Version.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,6 +77,20 @@ KrokComWindow::KrokComWindow(QWidget* parent)
   QCoreApplication::setOrganizationName("KrokCom");
   QCoreApplication::setApplicationName("Krokodile Commander");
   readSettings();
+
+  ///////////////////////////////////////////////////////////
+  // Set up multicart table
+  // The table has to be customized more than Designer will
+  // allow, so we do almost everything here
+  ///////////////////////////////////////////////////////////
+  // Set fixed sizes for headers
+  ui->mcartTable->horizontalHeader()->resizeSection(0, 140);
+  ui->mcartTable->horizontalHeader()->resizeSection(2, 28);
+  ui->mcartTable->horizontalHeader()->resizeSection(3, 28);
+  ui->mcartTable->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
+  ui->mcartTable->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+
+  slotSetMCBSType(0);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,6 +124,12 @@ void KrokComWindow::setupConnections()
   connect(ui->actAbout, SIGNAL(triggered()), this, SLOT(slotAbout()));
   connect(ui->actAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
+  // Other
+  connect(myFindKrokThread, SIGNAL(finished()), this, SLOT(slotUpdateFindKrokStatus()));
+
+  ///////////////////////////////////////////////////////////
+  // 'ROM' tab
+  ///////////////////////////////////////////////////////////
   // Buttons
   connect(ui->openRomButton, SIGNAL(clicked()), this, SLOT(slotOpenROM()));
   connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(slotDownloadROM()));
@@ -134,8 +157,11 @@ void KrokComWindow::setupConnections()
   qpGroup->addButton(ui->qp16Button, 16); ui->qp16Button->installEventFilter(this);
   connect(qpGroup, SIGNAL(buttonClicked(int)), this, SLOT(slotQPButtonClicked(int)));
 
-  // Other
-  connect(myFindKrokThread, SIGNAL(finished()), this, SLOT(slotUpdateFindKrokStatus()));
+  ///////////////////////////////////////////////////////////
+  // 'Multicart' tab
+  ///////////////////////////////////////////////////////////
+  connect(ui->mcartBSType, SIGNAL(currentIndexChanged(int)), this, SLOT(slotSetMCBSType(int)));
+
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -537,4 +563,109 @@ void KrokComWindow::slotShowDefaultMsg()
 {
   // TODO - check which tab is activated and customize message
   myStatus->setText(myKrokCartMessage);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotSetMCBSType(int id)
+{
+/*
+  QMessageBox::warning(this, "Warning",
+    "Changing the multicart type will delete all file selections.\nDo you really want to change the multicart type?");
+*/
+  // Change number of rows in multicart table based on id
+  int rows = 0;
+  switch(id)
+  {
+    case 0:  rows = 127;  break;  // 4K
+    case 1:  rows = 63;   break;  // 8K
+    case 2:  rows = 31;   break;  // 16K
+    case 3:  rows = 15;   break;  // 32K
+    default: return;
+  }
+  ui->mcartTable->setRowCount(127);
+  ui->mcartTable->clearContents();
+
+  // Add 'open' and 'trash' buttons to each row
+  QButtonGroup* mcartOpenGroup = new QButtonGroup(this);
+  mcartOpenGroup->setExclusive(false);
+  QButtonGroup* mcartDeleteGroup = new QButtonGroup(this);
+  mcartDeleteGroup->setExclusive(false);
+  for(int i = 0; i < 127; ++i)
+  {
+    QPushButton* ins = new QPushButton("...");
+    ui->mcartTable->setCellWidget(i, 2, ins);
+    mcartOpenGroup->addButton(ins, i);
+
+    QPushButton* del = new QPushButton("D");
+    ui->mcartTable->setCellWidget(i, 3, del);
+    mcartDeleteGroup->addButton(del, i);
+  }
+  connect(mcartOpenGroup, SIGNAL(buttonClicked(int)), this, SLOT(slotMCOpenButtonClicked(int)));
+  connect(mcartDeleteGroup, SIGNAL(buttonClicked(int)), this, SLOT(slotMCDeleteButtonClicked(int)));
+
+  ui->mcartTable->setRowCount(rows);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotMCOpenButtonClicked(int row)
+{
+  QTableWidgetItem* firstItem = ui->mcartTable->item(0, 1);
+  QFileInfo location(firstItem ? firstItem->data(Qt::DisplayRole).toString() : "");
+  QString file = QFileDialog::getOpenFileName(this,
+    tr("Select ROM Image"), location.absolutePath(), tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
+
+  if(file.isNull())
+    return;
+  QFileInfo info(file);
+
+  // Check if this ROM can be used for the currently selected multicart type
+  int selected = ui->mcartBSType->currentIndex();
+  if(selected == -1)
+    return;
+  BSType desired = BS_4K;
+  QString size = "";
+  switch(selected)
+  {
+    case 0:  desired = BS_4K;  size = "1/2/4K";  break;
+    case 1:  desired = BS_F8;  size = "1/2/4K and 8K (F8)";  break;
+    case 2:  desired = BS_F6;  size = "1/2/4K and 16K (F6)";  break;
+    case 3:  desired = BS_F4;  size = "1/2/4K and 32K (F4)";  break;
+  }
+
+  // All types can also store 4K images, as well as those specific
+  // to the type
+  BSType actual = CartDetector::autodetectType(info.absoluteFilePath().toStdString());
+  if(!(actual == desired || actual == BS_4K))
+  {
+    QMessageBox::critical(this, "Invalid ROM",
+      "Only " + size + " images are supported by\nthe selected multicart type.\nThe selected ROM was detected as \'" +
+      QString(Bankswitch::typeToName(actual).c_str()) + "\'.");
+    return;
+  }
+
+  // Add info to the filename field
+  QTableWidgetItem* fileItem = ui->mcartTable->item(row, 1);
+  if(fileItem)
+    fileItem->setData(Qt::DisplayRole, info.absoluteFilePath());
+  else
+    ui->mcartTable->setItem(row, 1, new QTableWidgetItem(info.absoluteFilePath()));
+
+  // Add a shortened name to the MenuName field
+  QTableWidgetItem* menuItem = ui->mcartTable->item(row, 0);
+  if(menuItem)
+    menuItem->setData(Qt::DisplayRole, info.baseName().toUpper());
+  else
+    ui->mcartTable->setItem(row, 0, new QTableWidgetItem(info.baseName().toUpper()));
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotMCDeleteButtonClicked(int row)
+{
+  QTableWidgetItem* fileItem = ui->mcartTable->item(row, 1);
+  if(fileItem)
+    fileItem->setData(Qt::DisplayRole, "");
+
+  QTableWidgetItem* menuItem = ui->mcartTable->item(row, 0);
+  if(menuItem)
+    menuItem->setData(Qt::DisplayRole, "");
 }
