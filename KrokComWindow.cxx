@@ -161,7 +161,6 @@ void KrokComWindow::setupConnections()
   // 'Multicart' tab
   ///////////////////////////////////////////////////////////
   connect(ui->mcartBSType, SIGNAL(currentIndexChanged(int)), this, SLOT(slotSetMCBSType(int)));
-
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -528,7 +527,7 @@ void KrokComWindow::loadROM(const QString& file)
 void KrokComWindow::assignToQPButton(QPushButton* button, int id)
 {
   QString file = QFileDialog::getOpenFileName(this,
-    tr("Select ROM Image"), "", tr("Atari 2600 ROM Image (*.bin *.a26)"));
+    tr("Select ROM Image"), "", tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
 
   if(!file.isNull())
     assignToQPButton(button, id, file, true);
@@ -561,17 +560,18 @@ void KrokComWindow::assignToQPButton(QPushButton* button, int id,
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotShowDefaultMsg()
 {
-  // TODO - check which tab is activated and customize message
   myStatus->setText(myKrokCartMessage);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotSetMCBSType(int id)
 {
-/*
-  QMessageBox::warning(this, "Warning",
-    "Changing the multicart type will delete all file selections.\nDo you really want to change the multicart type?");
-*/
+  if(0)
+  {
+    QMessageBox::warning(this, "Warning",
+      "Changing the multicart type will delete all file selections.\nDo you really want to change the multicart type?");
+  }
+
   // Change number of rows in multicart table based on id
   int rows = 0;
   switch(id)
