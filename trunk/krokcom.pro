@@ -50,6 +50,7 @@ macx {
         CoreFoundation \
         -framework \
         IOKit
-    ICON = macosx/Krok_icon.icns
+#    ICON = macosx/Krok_icon.icns
+    QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
     CONFIG += x86 ppc
 }
