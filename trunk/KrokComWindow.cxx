@@ -161,6 +161,8 @@ void KrokComWindow::setupConnections()
   // 'Multicart' tab
   ///////////////////////////////////////////////////////////
   connect(ui->mcartBSType, SIGNAL(currentIndexChanged(int)), this, SLOT(slotSetMCBSType(int)));
+  connect(ui->mcartTable, SIGNAL(cellChanged(int,int)), this, SLOT(slotCheckMCTable(int, int)));
+  connect(ui->mcartCreateButton, SIGNAL(clicked()), this, SLOT(slotCreateMulticart()));
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -651,11 +653,13 @@ void KrokComWindow::slotMCOpenButtonClicked(int row)
     ui->mcartTable->setItem(row, 1, new QTableWidgetItem(info.absoluteFilePath()));
 
   // Add a shortened name to the MenuName field
+  // Names can only be 13 characters long
+  QString menuName = info.baseName().toUpper().left(13);
   QTableWidgetItem* menuItem = ui->mcartTable->item(row, 0);
   if(menuItem)
-    menuItem->setData(Qt::DisplayRole, info.baseName().toUpper());
+    menuItem->setData(Qt::DisplayRole, menuName);
   else
-    ui->mcartTable->setItem(row, 0, new QTableWidgetItem(info.baseName().toUpper()));
+    ui->mcartTable->setItem(row, 0, new QTableWidgetItem(menuName));
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -668,4 +672,108 @@ void KrokComWindow::slotMCDeleteButtonClicked(int row)
   QTableWidgetItem* menuItem = ui->mcartTable->item(row, 0);
   if(menuItem)
     menuItem->setData(Qt::DisplayRole, "");
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotCheckMCTable(int row, int col)
+{
+  if(col != 0)
+    return;
+
+  // Make sure menu name entries are uppercase and max 13 characters
+  QTableWidgetItem* menuItem = ui->mcartTable->item(row, col);
+  if(menuItem)
+  {
+    QString menuName = menuItem->data(Qt::DisplayRole).toString().toUpper().left(13);
+    menuItem->setData(Qt::DisplayRole, menuName);
+  }
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotCreateMulticart()
+{
+  StringList menuNames, fileNames;
+  int missingMenu = 0, missingFile = 0;
+
+  ///////////////////////////////////////////////////////////////////
+  // ERROR checking ...
+  // As much as possible, we want to check for errors at this level,
+  // so the actual Cart class won't have to worry about it so much.
+  ///////////////////////////////////////////////////////////////////
+
+  // Scan the table, checking for missing menu and/or filenames
+  // Otherwise, add valid entries to a list
+  for(int row = 0; row < ui->mcartTable->rowCount(); ++row)
+  {
+    QTableWidgetItem* menuItem = ui->mcartTable->item(row, 0);
+    QTableWidgetItem* fileItem = ui->mcartTable->item(row, 1);
+    QString menuName = menuItem ? menuItem->data(Qt::DisplayRole).toString() : "";
+    QString fileName = fileItem ? fileItem->data(Qt::DisplayRole).toString() : "";
+
+    // Check for inconsistent data
+    if(menuName == "" && fileName == "")
+      continue;
+    else if(menuName == "" && fileName != "")
+      ++missingMenu;
+    else if(menuName != "" && fileName == "")
+      ++missingFile;
+    else
+    {
+      // Valid entry
+      menuNames.push_back(menuName.toStdString());
+      fileNames.push_back(fileName.toStdString());
+    }
+  }
+
+  // Do we continue with invalid data?
+  if(missingMenu > 0 || missingFile > 0)
+  {
+    QString message = "Multicart entries are inconsistent.\n";
+    if(missingMenu) message += "Missing menu names: " + QString::number(missingMenu) + "\n";
+    if(missingFile) message += "Missing file names: " + QString::number(missingFile) + "\n";
+    message += "You must fix these entries before proceeding.";
+
+    QMessageBox::critical(this, "Invalid Entries", message);
+    return;
+  }
+  else if(menuNames.size() == 0)
+  {
+    QMessageBox::critical(this, "Invalid Entries", "You must add at least one ROM image.");
+    return;
+  }
+
+  // See if a valid multicart name has been chosen
+  QFileInfo info(ui->mcartFileEdit->text());
+  if(ui->mcartFileEdit->text() == "")
+  {
+    QMessageBox::critical(this, "File error",
+      QString("An invalid name has been chosen for your multicart rom.\n") +
+      QString("Make sure you specify a name, and that you have\n") +
+      QString("permission to save a file in that location."));
+    return;
+  }
+
+  // Check if this ROM can be used for the currently selected multicart type
+  int selected = ui->mcartBSType->currentIndex();
+  BSType bstype = BS_NONE;
+  switch(selected)
+  {
+    case 0:  bstype = BS_MC4K;  break;
+    case 1:  bstype = BS_MCF8;  break;
+    case 2:  bstype = BS_MCF6;  break;
+    case 3:  bstype = BS_MCF4;  break;
+  }
+
+  // Create a cart from the given data
+  myCart.createMultiFile(ui->mcartFileEdit->text().toStdString(), bstype, true,
+                         menuNames, fileNames);
+
+  if(myCart.isValid())
+  {
+cerr << "multicart creation succeeded\n";
+  }
+  else
+  {
+cerr << "multicart creation failed\n";
+  }
 }

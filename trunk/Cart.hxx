@@ -17,7 +17,8 @@
 #ifndef __CART_HXX
 #define __CART_HXX
 
-#define MAXCARTSIZE 512*1024
+// 2048 sectors of 256 bytes each
+#define MAXCARTSIZE 2048*256
 
 #include <vector>
 
@@ -52,8 +53,8 @@ class Cart
       This will be a 'multi-cart' ROM, consisting of each of the separate
       ROMs, all with the same bankswitching scheme.
     */
-    static bool createMultiFile(const string& romfile, const string& type,
-                                const vector<string>& filenames);
+    bool createMultiFile(const string& romfile, BSType type, bool ntsc,
+                         const StringList& menuNames, const StringList& fileNames);
 
     //////////////////////////////////////////////////////////////////
     //  The following two methods act as an iterator through all the
@@ -96,17 +97,20 @@ class Cart
     uInt16 verifyNextSector(SerialPort& port);
 
     /** Accessor and mutator for bankswitch type. */
-    BSType getBSType()            { return myType; }
+    BSType getBSType() const      { return myType; }
     void   setBSType(BSType type) { myType = type; }
 
     /** Set number of write retries before bailing out. */
     void setRetry(int retry) { myRetry = retry; }
 
     /** Get the current cart size. */
-    uInt32 getSize() { return myCartSize; }
+    uInt32 getSize() const { return myCartSize; }
 
     /** Was the ROM loaded correctly? */
-    bool isValid() { return myIsValid; }
+    bool isValid() const { return myIsValid; }
+
+    /** Get the most recent logged message. */
+    const string& message() const { return myLogMessage; }
 
     /** Auxiliary method to autodetect the bankswitch type. */
     static BSType autodetectType(uInt8* data, uInt32 size);
@@ -122,12 +126,17 @@ class Cart
     /**
       Write the given sector to the serial port.
     */
-    bool downloadSector(uInt32 sector, SerialPort& port);
+    bool downloadSector(uInt32 sector, SerialPort& port) const;
 
     /**
       Read and verify the given sector from the serial port.
     */
-    bool verifySector(uInt32 sector, SerialPort& port);
+    bool verifySector(uInt32 sector, SerialPort& port) const;
+
+    /**
+      Fill the buffer with the data read ...
+    */
+    void menuEntry(uInt8* buffer, const string& name) const;
 
   private:
     uInt8  myCart[MAXCARTSIZE];
@@ -140,6 +149,7 @@ class Cart
     uInt16 myNumSectors;
 
     bool myIsValid;
+    string myLogMessage;
 };
 
 #endif

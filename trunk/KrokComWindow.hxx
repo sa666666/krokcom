@@ -61,15 +61,17 @@ Q_OBJECT
     void slotOpenROM();
     void slotDownloadROM();
     void slotVerifyROM();
-    void slotRetry(QAction* action);
-    void slotSetBSType(const QString& text);
+    void slotRetry(QAction*);
+    void slotSetBSType(const QString&);
     void slotAbout();
-    void slotQPButtonClicked(int id);
+    void slotQPButtonClicked(int);
     void slotShowDefaultMsg();
 
     void slotSetMCBSType(int id);
-    void slotMCOpenButtonClicked(int id);
-    void slotMCDeleteButtonClicked(int id);
+    void slotMCOpenButtonClicked(int row);
+    void slotMCDeleteButtonClicked(int row);
+    void slotCheckMCTable(int row, int col);
+    void slotCreateMulticart();
 
   private:
     Ui::KrokComWindow* ui;

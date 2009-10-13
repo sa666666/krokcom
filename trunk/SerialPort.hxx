@@ -19,9 +19,6 @@
 
 #include "bspf.hxx"
 
-#include <vector>
-typedef vector<string> StringList;
-
 /**
   This class provides an interface for a standard serial port.
   For now, it always assumes 8n1; the baud rate can be

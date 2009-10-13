@@ -32,7 +32,8 @@ Cart::Cart()
     myType(BS_NONE),
     myCurrentSector(0),
     myNumSectors(0),
-    myIsValid(false)
+    myIsValid(false),
+    myLogMessage("")
 {
 }
 
@@ -46,11 +47,110 @@ bool Cart::create(const string& filename, const string& type)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool Cart::createMultiFile(const string& romfile, const string& type,
-                           const vector<string>& filenames)
+bool Cart::createMultiFile(const string& romfile, BSType type, bool ntsc,
+                           const StringList& menuNames, const StringList& fileNames)
 {
-  // TODO - implement this
-  return false;
+  static int MCByteSizes[]  = {4096, 8192, 16384, 32768};
+  static int MCMaxEntries[] = {127, 63, 31, 15};
+  static int MCMenuOffset[] = {0, 4096, 12288, 28672};
+
+  myIsValid = false;
+  myLogMessage = "Invalid cartridge.";
+  myCartSize = 0;
+  memset(myCart, 0, MAXCARTSIZE);
+  uInt8 *cart = myCart, menubuffer[13];
+
+  // Rudimentary consistency check of lists
+  if(menuNames.size() != fileNames.size())
+  {
+    myLogMessage = "Menu and file names don't match.";
+    return false;
+  }
+
+  // Determine the bankswitch scheme each ROM should have
+  BSType romType = BS_NONE;
+  int size = 0;
+  switch(type)
+  {
+    case BS_MC4K:  romType = BS_4K;  size = 0;  break;
+    case BS_MCF8:  romType = BS_F8;  size = 1;  break;
+    case BS_MCF6:  romType = BS_F6;  size = 2;  break;
+    case BS_MCF4:  romType = BS_F4;  size = 3;  break;
+    default:
+      myLogMessage = "Invalid multicart bankswitch scheme.";
+      return false;
+  }
+
+  // Add the menu image
+  if(readFile("MC4K.bin", cart, MCByteSizes[size], "") == MCByteSizes[size])
+  {
+    // Set menu title and clear all menu entries
+    menuEntry(menubuffer, "- KROKOCART -");
+    for (int charpos = 0; charpos < 13; ++charpos)
+      cart[MCMenuOffset[size] + charpos] = menubuffer[charpos];
+    for (int charpos = 13; charpos < (13 * 127); ++charpos)
+      cart[MCMenuOffset[size] + charpos] = 0;
+
+    cart += MCByteSizes[size];
+    myCartSize += MCByteSizes[size];
+  }
+  else
+  {
+    myLogMessage = "Couldn't find multicart menu image.";
+    return false;
+  }
+
+  // Scan through each item in the list(s)
+  int numEntries = BSPF_min((int)menuNames.size(), MCMaxEntries[size]);
+  int delEntries = BSPF_max((int)menuNames.size() - numEntries, 0);
+  int validEntries = 0;
+  for(int i = 0; i < numEntries; ++i)
+  {
+    // First check if the size match
+    if(readFile(fileNames[i], cart, MCByteSizes[size], "") == MCByteSizes[size])
+    {
+      // We also only want ROMs where the bankswitch scheme matches
+      if(myType == romType)
+      {
+        cart += MCByteSizes[size];        // Point to position for next cart
+        myCartSize += MCByteSizes[size];  // Cart size increases
+        ++validEntries;
+
+        // Add menu entry
+        menuEntry(menubuffer, menuNames[i]);
+        for (int charpos = 0; charpos < 13; ++charpos)
+          myCart[MCMenuOffset[size] + ((validEntries) * 13) + charpos] =
+              menubuffer[charpos];
+      }
+      else
+        cout << "Multicart image at position " << i << " skipped." << endl;
+    }
+  }
+
+  // Set PAL/NTSC
+  cout << "Setting " << (ntsc ? "NTSC" : "PAL") << " multicart menu type." << endl;
+  myCart[MCMenuOffset[size] + 2046] = ntsc ? 128 : 0;
+
+  // Set number of menu entries
+  cout << "Multicart has " << validEntries << " menu entries." << endl;
+  myCart[MCMenuOffset[size] + 2047] = (uInt8)validEntries;
+
+  myIsValid = myCartSize > 0;
+
+  // Save the image to an external file
+  if(myIsValid)
+  {
+    ofstream out(romfile.c_str(), ios::binary);
+    if(!out)
+    {
+    }
+
+    out.write((char*)myCart, myCartSize);
+    cout << "Wrote out " << myCartSize << " bytes." << endl;
+    out.close();
+  }
+
+  return myIsValid;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -214,7 +314,7 @@ int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize,
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool Cart::downloadSector(uInt32 sector, SerialPort& port)
+bool Cart::downloadSector(uInt32 sector, SerialPort& port) const
 {
   uInt8 buffer[262];
 
@@ -260,7 +360,7 @@ bool Cart::downloadSector(uInt32 sector, SerialPort& port)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool Cart::verifySector(uInt32 sector, SerialPort& port)
+bool Cart::verifySector(uInt32 sector, SerialPort& port) const
 {
   uInt8 buffer[257];
 
@@ -317,4 +417,42 @@ bool Cart::verifySector(uInt32 sector, SerialPort& port)
   // Now that we have a valid sector read back from the device,
   // compare to the actual data to make sure they match
   return memcmp(myCart + sector*256, &buffer, 256) == 0;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void Cart::menuEntry(uInt8* menuentry, const string& menuname) const
+{
+  static uInt8 MCNameChars[] = {
+    ' ','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q',
+    'R','S','T','U','V','W','X','Y','Z','*','=','0','1','2','3','4','5','6',
+    '7','8','9','_','(',')','-'
+  };
+
+  // Iterate through characters in name
+  int charpos;
+  char next;
+  for (uInt32 stringpos = 0; stringpos < 13; stringpos ++)
+  {
+    // Pad with spaces once we have reached the end of the name
+    if (stringpos >= menuname.length())
+      charpos = 0;
+    else 
+    {
+      // Retrieve next character from name 
+      next = menuname[stringpos];
+      for (charpos = (sizeof(MCNameChars) - 1); charpos > 0; charpos --)
+      {
+        // Check for character in MCNameChars
+        if (next == MCNameChars[charpos])
+          break;
+      }
+    }
+    menuentry[stringpos] = (uInt8)(charpos * 5);  // Chars are 5 lines high
+  }
+
+  // Copy first character to last place (oddity of krok menu software)
+  uInt8 first = menuentry[0];
+  for (charpos = 1 ; charpos < 13; charpos ++)
+    menuentry[charpos - 1] = menuentry[charpos];
+  menuentry[12] = first;
 }
