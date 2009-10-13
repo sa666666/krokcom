@@ -743,6 +743,9 @@ supported by the Krok Cart.</string>
           </item>
           <item>
            <widget class="QLabel" name="label_9">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="minimumSize">
              <size>
               <width>140</width>
@@ -762,6 +765,9 @@ supported by the Krok Cart.</string>
           </item>
           <item>
            <widget class="QLineEdit" name="mcartinfoFileEdit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -787,6 +793,9 @@ supported by the Krok Cart.</string>
           </item>
           <item>
            <widget class="QPushButton" name="mcartinfoOpenButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>30</width>
@@ -803,6 +812,9 @@ supported by the Krok Cart.</string>
           </item>
           <item>
            <widget class="QPushButton" name="mcartinfoNewButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>30</width>
@@ -819,6 +831,9 @@ supported by the Krok Cart.</string>
           </item>
           <item>
            <widget class="QPushButton" name="mcartinfoSaveButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>30</width>
@@ -855,15 +870,6 @@ supported by the Krok Cart.</string>
              <bool>false</bool>
             </attribute>
             <attribute name="horizontalHeaderStretchLastSection">
-             <bool>false</bool>
-            </attribute>
-            <attribute name="verticalHeaderHighlightSections">
-             <bool>false</bool>
-            </attribute>
-            <attribute name="horizontalHeaderStretchLastSection">
-             <bool>false</bool>
-            </attribute>
-            <attribute name="horizontalHeaderHighlightSections">
              <bool>false</bool>
             </attribute>
             <attribute name="verticalHeaderHighlightSections">
@@ -1030,6 +1036,9 @@ supported by the Krok Cart.</string>
           </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="mcartUpButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>30</width>
@@ -1060,6 +1069,9 @@ supported by the Krok Cart.</string>
           </item>
           <item row="2" column="1">
            <widget class="QPushButton" name="mcartLoadDirButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>30</width>
@@ -1090,6 +1102,9 @@ supported by the Krok Cart.</string>
           </item>
           <item row="4" column="1">
            <widget class="QPushButton" name="mcartDownButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>30</width>
