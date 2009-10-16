@@ -16,14 +16,15 @@
 
 #include <cstring>
 #include <fstream>
+#include <sstream>
 
 #include "bspf.hxx"
 
 #include "BSType.hxx"
 #include "Cart.hxx"
+#include "MultiCart.hxx"
 #include "CartDetector.hxx"
 #include "SerialPort.hxx"
-
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Cart::Cart()
@@ -50,13 +51,10 @@ bool Cart::create(const string& filename, const string& type)
 bool Cart::createMultiFile(const string& romfile, BSType type, bool ntsc,
                            const StringList& menuNames, const StringList& fileNames)
 {
-  static int MCByteSizes[]  = {4096, 8192, 16384, 32768};
-  static int MCMaxEntries[] = {127, 63, 31, 15};
-  static int MCMenuOffset[] = {0, 4096, 12288, 28672};
-
   myIsValid = false;
   myLogMessage = "Invalid cartridge.";
   myCartSize = 0;
+  myType = BS_NONE;
   memset(myCart, 0, MAXCARTSIZE);
   uInt8 *cart = myCart, menubuffer[13];
 
@@ -70,70 +68,70 @@ bool Cart::createMultiFile(const string& romfile, BSType type, bool ntsc,
   // Determine the bankswitch scheme each ROM should have
   BSType romType = BS_NONE;
   int size = 0;
+  const uInt8* menuPtr = NULL;
   switch(type)
   {
-    case BS_MC4K:  romType = BS_4K;  size = 0;  break;
-    case BS_MCF8:  romType = BS_F8;  size = 1;  break;
-    case BS_MCF6:  romType = BS_F6;  size = 2;  break;
-    case BS_MCF4:  romType = BS_F4;  size = 3;  break;
+    case BS_MC4K:  romType = BS_4K;  menuPtr = MC_4KMenu;  size = 0;  break;
+    case BS_MCF8:  romType = BS_F8;  menuPtr = MC_F8Menu;  size = 1;  break;
+    case BS_MCF6:  romType = BS_F6;  menuPtr = MC_F6Menu;  size = 2;  break;
+    case BS_MCF4:  romType = BS_F4;  menuPtr = MC_F4Menu;  size = 3;  break;
     default:
       myLogMessage = "Invalid multicart bankswitch scheme.";
       return false;
   }
+  uInt8* imgbuf = new uInt8[MC_ByteSizes[size]];
 
   // Add the menu image
-  if(readFile("MC4K.bin", cart, MCByteSizes[size], "") == MCByteSizes[size])
-  {
-    // Set menu title and clear all menu entries
-    menuEntry(menubuffer, "- KROKOCART -");
-    for (int charpos = 0; charpos < 13; ++charpos)
-      cart[MCMenuOffset[size] + charpos] = menubuffer[charpos];
-    for (int charpos = 13; charpos < (13 * 127); ++charpos)
-      cart[MCMenuOffset[size] + charpos] = 0;
+  memcpy(myCart, menuPtr, MC_ByteSizes[size]);
 
-    cart += MCByteSizes[size];
-    myCartSize += MCByteSizes[size];
-  }
-  else
-  {
-    myLogMessage = "Couldn't find multicart menu image.";
-    return false;
-  }
+  // Set menu title and clear all menu entries
+  menuEntry(menubuffer, "- KROKOCART -");
+  for (int charpos = 0; charpos < 13; ++charpos)
+    cart[MC_MenuOffset[size] + charpos] = menubuffer[charpos];
+  for (int charpos = 13; charpos < (13 * 127); ++charpos)
+    cart[MC_MenuOffset[size] + charpos] = 0;
+
+  cart += MC_ByteSizes[size];
+  myCartSize += MC_ByteSizes[size];
 
   // Scan through each item in the list(s)
-  int numEntries = BSPF_min((int)menuNames.size(), MCMaxEntries[size]);
-  int delEntries = BSPF_max((int)menuNames.size() - numEntries, 0);
+  int numEntries = BSPF_min((int)menuNames.size(), MC_MaxEntries[size]);
   int validEntries = 0;
   for(int i = 0; i < numEntries; ++i)
   {
-    // First check if the size match
-    if(readFile(fileNames[i], cart, MCByteSizes[size], "") == MCByteSizes[size])
-    {
-      // We also only want ROMs where the bankswitch scheme matches
-      if(myType == romType)
-      {
-        cart += MCByteSizes[size];        // Point to position for next cart
-        myCartSize += MCByteSizes[size];  // Cart size increases
-        ++validEntries;
+    int imgsize = readFile(fileNames[i], imgbuf, MC_ByteSizes[size]);
+    BSType type = autodetectType(imgbuf, imgsize);
 
-        // Add menu entry
-        menuEntry(menubuffer, menuNames[i]);
-        for (int charpos = 0; charpos < 13; ++charpos)
-          myCart[MCMenuOffset[size] + ((validEntries) * 13) + charpos] =
-              menubuffer[charpos];
-      }
-      else
-        cout << "Multicart image at position " << i << " skipped." << endl;
+    if(type == romType || type == BS_4K)
+    {
+      if(imgsize < MC_ByteSizes[size])
+        padImage(imgbuf, imgsize, MC_ByteSizes[size]);
+
+      // Add the image
+      memcpy(cart, imgbuf, MC_ByteSizes[size]);
+      cart += MC_ByteSizes[size];        // Point to position for next cart
+      myCartSize += MC_ByteSizes[size];  // Cart size increases
+      ++validEntries;
+
+      // Add menu entry
+      menuEntry(menubuffer, menuNames[i]);
+      for (int charpos = 0; charpos < 13; ++charpos)
+        myCart[MC_MenuOffset[size] + ((validEntries) * 13) + charpos] =
+            menubuffer[charpos];
     }
+    else
+      cout << "Multicart image " << i << " skipped; invalid bankswitch type \'"
+           << Bankswitch::typeToName(type) << "\'" << endl;
   }
+  delete[] imgbuf;
 
   // Set PAL/NTSC
   cout << "Setting " << (ntsc ? "NTSC" : "PAL") << " multicart menu type." << endl;
-  myCart[MCMenuOffset[size] + 2046] = ntsc ? 128 : 0;
+  myCart[MC_MenuOffset[size] + 2046] = ntsc ? 128 : 0;
 
   // Set number of menu entries
   cout << "Multicart has " << validEntries << " menu entries." << endl;
-  myCart[MCMenuOffset[size] + 2047] = (uInt8)validEntries;
+  myCart[MC_MenuOffset[size] + 2047] = (uInt8)validEntries;
 
   myIsValid = myCartSize > 0;
 
@@ -143,13 +141,23 @@ bool Cart::createMultiFile(const string& romfile, BSType type, bool ntsc,
     ofstream out(romfile.c_str(), ios::binary);
     if(!out)
     {
+      myLogMessage = "Couldn't open multicart output file.";
+      return false;
     }
 
     out.write((char*)myCart, myCartSize);
     cout << "Wrote out " << myCartSize << " bytes." << endl;
     out.close();
+
+    ostringstream buf;
+    buf << (ntsc ? "NTSC" : "PAL") << " multicart created with " << validEntries << " entries";
+    if((int)menuNames.size() > validEntries)
+      buf << " (skipped " << (menuNames.size() - validEntries) << ")";
+    buf << ", size = " << myCartSize << ".";
+    myLogMessage = buf.str();
   }
 
+  myType = type;
   return myIsValid;
 }
 
@@ -178,13 +186,6 @@ uInt16 Cart::writeNextSector(SerialPort& port)
   else if(myCurrentSector == myNumSectors)
     throw "write: All sectors already written";
 
-  // Handle 3F and 3E carts, which are a little different from the rest
-  // There are two ranges of sectors; the second starts once we past the
-  // cart size
-  if((myType == BS_3F || myType == BS_3E) &&
-      myCurrentSector == myCartSize / 256)
-    myCurrentSector = 2040;
-
   uInt16 sector = myCurrentSector;
   uInt32 retry = 0;
   bool status;
@@ -193,7 +194,14 @@ uInt16 Cart::writeNextSector(SerialPort& port)
   if(!status)
     throw "write: failed max retries";
 
+  // Handle 3F and 3E carts, which are a little different from the rest
+  // There are two ranges of sectors; the second starts once we past the
+  // cart size
   myCurrentSector++;
+  if((myType == BS_3F || myType == BS_3E) &&
+      myCurrentSector == myCartSize / 256)
+    myCurrentSector = 2040;
+
   return sector;
 }
 
@@ -205,13 +213,6 @@ uInt16 Cart::verifyNextSector(SerialPort& port)
   else if(myCurrentSector == myNumSectors)
     throw "verify: All sectors already verified";
 
-  // Handle 3F and 3E carts, which are a little different from the rest
-  // There are two ranges of sectors; the second starts once we past the
-  // cart size
-  if((myType == BS_3F || myType == BS_3E) &&
-      myCurrentSector == myCartSize / 256)
-    myCurrentSector = 2040;
-
   uInt16 sector = myCurrentSector;
   uInt32 retry = 0;
   bool status;
@@ -220,14 +221,44 @@ uInt16 Cart::verifyNextSector(SerialPort& port)
   if(!status)
     throw "verify: failed max retries";
 
+  // Handle 3F and 3E carts, which are a little different from the rest
+  // There are two ranges of sectors; the second starts once we past the
+  // cart size
   myCurrentSector++;
+  if((myType == BS_3F || myType == BS_3E) &&
+      myCurrentSector == myCartSize / 256)
+    myCurrentSector = 2040;
+
   return sector;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-BSType Cart::autodetectType(uInt8* data, uInt32 size)
+BSType Cart::autodetectType(uInt8* data, uInt32 size) const
 {
   return CartDetector::autodetectType(data, size);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize) const
+{
+  cout << "Reading from file: \'" << filename << "\'" << endl;
+
+  // Read file into buffer
+  ifstream in(filename.c_str(), ios::binary);
+  if(!in)
+    return 0;
+
+  // Figure out how much data we should read
+  in.seekg(0, ios::end);
+  streampos length = in.tellg();
+  in.seekg(0, ios::beg);
+  uInt32 cartsize = length > maxSize ? maxSize : (uInt32)length;
+
+  in.read((char*)cartridge, cartsize);
+  cout << "Read in " << cartsize << " bytes" << endl;
+  in.close();
+
+  return cartsize;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -311,6 +342,30 @@ int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize,
       myCart[MAXCARTSIZE - 2048 + i] = myCart[cartsize - 2048 + i];
 
   return cartsize;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void Cart::padImage(uInt8* buffer, uInt32 bufsize, uInt32 requiredsize) const
+{
+  // Pad buffer to minimum size, aligning to power-of-2 boundary
+  if(bufsize < requiredsize)
+  {
+    cout << "  Converting to " << (requiredsize/1024) << "K." << endl;
+
+    // Determine power-of-2 boundary
+    uInt32 power2 = 1;
+    while(power2 < bufsize)
+      power2 <<= 1;
+
+    // Erase all garbage after the valid data
+    memset(buffer+bufsize, 0, requiredsize-bufsize);
+
+    // Lay down a copy of the valid buffer data at power-of-2 intervals
+    uInt8* tmp_ptr = buffer + power2;
+    for(uInt32 i = 1; i < requiredsize/power2; ++i, tmp_ptr += power2)
+      memcpy(tmp_ptr, buffer, bufsize);
+  }
+  cout << endl;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -422,12 +477,6 @@ bool Cart::verifySector(uInt32 sector, SerialPort& port) const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Cart::menuEntry(uInt8* menuentry, const string& menuname) const
 {
-  static uInt8 MCNameChars[] = {
-    ' ','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q',
-    'R','S','T','U','V','W','X','Y','Z','*','=','0','1','2','3','4','5','6',
-    '7','8','9','_','(',')','-'
-  };
-
   // Iterate through characters in name
   int charpos;
   char next;
@@ -440,10 +489,10 @@ void Cart::menuEntry(uInt8* menuentry, const string& menuname) const
     {
       // Retrieve next character from name 
       next = menuname[stringpos];
-      for (charpos = (sizeof(MCNameChars) - 1); charpos > 0; charpos --)
+      for (charpos = (sizeof(MC_NameChars) - 1); charpos > 0; charpos --)
       {
         // Check for character in MCNameChars
-        if (next == MCNameChars[charpos])
+        if (next == MC_NameChars[charpos])
           break;
       }
     }

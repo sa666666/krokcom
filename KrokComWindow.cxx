@@ -31,6 +31,7 @@
 #include <QTimer>
 #include <QTableWidget>
 #include <QHeaderView>
+#include <QDir>
 
 #include <iostream>
 #include <sstream>
@@ -91,6 +92,9 @@ KrokComWindow::KrokComWindow(QWidget* parent)
   ui->mcartTable->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
 
   slotSetMCBSType(0);
+
+  // By default, start looking for ROMs in the users' home directory
+  myLastDir.setPath(QDir::home().absolutePath());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -295,9 +299,11 @@ void KrokComWindow::slotOpenROM()
   // Switch to 'ROM' tab
   ui->tabWidget->setCurrentIndex(0);
 
-  QFileInfo info(ui->romFileEdit->text());
+  QString location = ui->romFileEdit->text() != "" ?
+    QFileInfo(ui->romFileEdit->text()).absolutePath() :
+    myLastDir.absolutePath();
   QString file = QFileDialog::getOpenFileName(this,
-    tr("Select ROM Image"), info.absolutePath(), tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
+    tr("Select ROM Image"), /*location*/"", tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
 
   if(!file.isNull())
     loadROM(file);
@@ -320,8 +326,7 @@ void KrokComWindow::slotDownloadROM()
   else if(!myCart.isValid())
   {
     myDownloadInProgress = false;
-    myStatus->setText("Invalid cartridge.");
-    QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
+    statusMessage("Invalid cartridge.");
     return;
   }
 
@@ -352,7 +357,7 @@ void KrokComWindow::slotDownloadROM()
   if(sector == numSectors)
   {
     progress.setValue(numSectors);
-    myStatus->setText("Cartridge downloaded.");
+    statusMessage("Cartridge downloaded.");
 
     ui->verifyButton->setDisabled(false);  ui->actVerifyROM->setDisabled(false);
 
@@ -361,9 +366,7 @@ void KrokComWindow::slotDownloadROM()
       slotVerifyROM();
   }
   else
-    myStatus->setText("Download failure on sector " + QString::number(sector) + ".");
-
-  QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
+    statusMessage("Download failure on sector " + QString::number(sector) + ".");
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -381,8 +384,7 @@ void KrokComWindow::slotVerifyROM()
   else if(!myCart.isValid())
   {
     myDownloadInProgress = false;
-    myStatus->setText("Invalid cartridge.");
-    QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
+    statusMessage("Invalid cartridge.");
     return;
   }
 
@@ -412,12 +414,11 @@ void KrokComWindow::slotVerifyROM()
   if(sector == numSectors)
   {
     progress.setValue(numSectors);
-    myStatus->setText("Verified download of " + QString::number(sector) + " sectors.");
+    statusMessage("Verified download of " + QString::number(sector) + " sectors.");
   }
   else
-    myStatus->setText("Verify failure on sector " + QString::number(sector) + ".");
+    statusMessage("Verify failure on sector " + QString::number(sector) + ".");
 
-  QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
   myDownloadInProgress = false;
 }
 
@@ -443,6 +444,7 @@ void KrokComWindow::slotSetBSType(const QString& text)
     if(myDetectedBSType != selectedType)
     {
 cerr << "Sure you want to override type (yes/no/always)?\n";
+      myCart.setBSType(selectedType);
     }
     else
       myCart.setBSType(myDetectedBSType);
@@ -510,7 +512,7 @@ void KrokComWindow::loadROM(const QString& file)
     myDetectedBSType = myCart.getBSType();
     QString bstype = Bankswitch::typeToName(myDetectedBSType).c_str();
     int match = ui->romBSType->findText(bstype, Qt::MatchStartsWith);
-    ui->romBSType->setCurrentIndex(match < ui->romBSType->count() ? match : 0);
+    ui->romBSType->setCurrentIndex(match < ui->romBSType->count() && match >= 0 ? match : 0);
     ui->romBSType->setDisabled(false);
     ui->downloadButton->setDisabled(false);  ui->actDownloadROM->setDisabled(false);
 
@@ -519,20 +521,21 @@ void KrokComWindow::loadROM(const QString& file)
       slotDownloadROM();
   }
   else
-  {
-    myStatus->setText("Invalid cartridge.");
-    QTimer::singleShot(2000, this, SLOT(slotShowDefaultMsg()));
-  }
+    statusMessage("Invalid cartridge.");
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::assignToQPButton(QPushButton* button, int id)
 {
   QString file = QFileDialog::getOpenFileName(this,
-    tr("Select ROM Image"), "", tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
+    tr("Select ROM Image"), myLastDir.absolutePath(), tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
 
   if(!file.isNull())
+  {
     assignToQPButton(button, id, file, true);
+    // Remember this location for the next time a file is selected
+    myLastDir.setPath(file);
+  }
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -560,6 +563,14 @@ void KrokComWindow::assignToQPButton(QPushButton* button, int id,
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::statusMessage(const QString& msg)
+{
+  // Show the message for a short time, then reset to the default message
+  myStatus->setText(msg);
+  QTimer::singleShot(4000, this, SLOT(slotShowDefaultMsg()));
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotShowDefaultMsg()
 {
   myStatus->setText(myKrokCartMessage);
@@ -575,13 +586,14 @@ void KrokComWindow::slotSetMCBSType(int id)
   }
 
   // Change number of rows in multicart table based on id
+  QString romname = "";
   int rows = 0;
   switch(id)
   {
-    case 0:  rows = 127;  break;  // 4K
-    case 1:  rows = 63;   break;  // 8K
-    case 2:  rows = 31;   break;  // 16K
-    case 3:  rows = 15;   break;  // 32K
+    case 0:  rows = 127;  romname = "/MC4K.a26";  break;  // 4K
+    case 1:  rows = 63;   romname = "/MCF8.a26";  break;  // 8K
+    case 2:  rows = 31;   romname = "/MCF6.a26";  break;  // 16K
+    case 3:  rows = 15;   romname = "/MCF4.a26";  break;  // 32K
     default: return;
   }
   ui->mcartTable->setRowCount(127);
@@ -594,11 +606,11 @@ void KrokComWindow::slotSetMCBSType(int id)
   mcartDeleteGroup->setExclusive(false);
   for(int i = 0; i < 127; ++i)
   {
-    QPushButton* ins = new QPushButton("...");
+    QPushButton* ins = new QPushButton(QIcon(":icons/pics/new.png"), "");
     ui->mcartTable->setCellWidget(i, 2, ins);
     mcartOpenGroup->addButton(ins, i);
 
-    QPushButton* del = new QPushButton("D");
+    QPushButton* del = new QPushButton(QIcon(":icons/pics/delete.png"), "");
     ui->mcartTable->setCellWidget(i, 3, del);
     mcartDeleteGroup->addButton(del, i);
   }
@@ -606,18 +618,23 @@ void KrokComWindow::slotSetMCBSType(int id)
   connect(mcartDeleteGroup, SIGNAL(buttonClicked(int)), this, SLOT(slotMCDeleteButtonClicked(int)));
 
   ui->mcartTable->setRowCount(rows);
+
+  // Set a default multicart name
+  QString path = QDir::homePath() + romname;
+  ui->mcartFileEdit->setText(QDir(path).absolutePath());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotMCOpenButtonClicked(int row)
 {
-  QTableWidgetItem* firstItem = ui->mcartTable->item(0, 1);
-  QFileInfo location(firstItem ? firstItem->data(Qt::DisplayRole).toString() : "");
   QString file = QFileDialog::getOpenFileName(this,
-    tr("Select ROM Image"), location.absolutePath(), tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
+    tr("Select ROM Image"), myLastDir.absolutePath(), tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
 
   if(file.isNull())
     return;
+
+  // Remember this location for the next time a file is selected
+  myLastDir.setPath(file);
   QFileInfo info(file);
 
   // Check if this ROM can be used for the currently selected multicart type
@@ -654,7 +671,7 @@ void KrokComWindow::slotMCOpenButtonClicked(int row)
 
   // Add a shortened name to the MenuName field
   // Names can only be 13 characters long
-  QString menuName = info.baseName().toUpper().left(13);
+  QString menuName = info.completeBaseName().toUpper().left(13);
   QTableWidgetItem* menuItem = ui->mcartTable->item(row, 0);
   if(menuItem)
     menuItem->setData(Qt::DisplayRole, menuName);
@@ -763,17 +780,11 @@ void KrokComWindow::slotCreateMulticart()
     case 2:  bstype = BS_MCF6;  break;
     case 3:  bstype = BS_MCF4;  break;
   }
+  bool ntsc = ui->mcartTVType->currentIndex() == 0;
 
   // Create a cart from the given data
-  myCart.createMultiFile(ui->mcartFileEdit->text().toStdString(), bstype, true,
+  myCart.createMultiFile(ui->mcartFileEdit->text().toStdString(), bstype, ntsc,
                          menuNames, fileNames);
-
-  if(myCart.isValid())
-  {
-cerr << "multicart creation succeeded\n";
-  }
-  else
-  {
-cerr << "multicart creation failed\n";
-  }
+  
+  statusMessage(QString(myCart.message().c_str()));
 }

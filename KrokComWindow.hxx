@@ -21,6 +21,7 @@
 #include <QAction>
 #include <QLabel>
 #include <QProgressBar>
+#include <QDir>
 
 #include "Cart.hxx"
 #include "SerialPortManager.hxx"
@@ -54,6 +55,8 @@ Q_OBJECT
     void assignToQPButton(QPushButton* button, int id);
     void assignToQPButton(QPushButton* button, int id, const QString& file, bool save);
 
+    void statusMessage(const QString& msg);
+
   private slots:
     void slotConnectKrokCart();
     void slotUpdateFindKrokStatus();
@@ -84,6 +87,7 @@ Q_OBJECT
     QLabel* myStatus;
     QLabel* myLED;
     QProgressBar* myProgress;
+    QDir myLastDir;
 
     QString myKrokCartMessage;
     bool myDownloadInProgress;
