@@ -16,10 +16,11 @@ HEADERS += KrokComWindow.hxx \
     SerialPortManager.hxx \
     SerialPort.hxx \
     FindKrokThread.hxx \
-    Version.hxx
+    Version.hxx \
+    MultiCart.hxx
 FORMS += krokcomwindow.ui
 RESOURCES += resources.qrc
-unix:!macx {
+unix:!macx { 
     SOURCES += SerialPortUNIX.cxx
     HEADERS += SerialPortUNIX.hxx
     TARGET = krokcom
@@ -43,14 +44,16 @@ unix:!macx {
         arm \
         desktop
 }
-macx {
+macx { 
     SOURCES += SerialPortMACOSX.cxx
     HEADERS += SerialPortMACOSX.hxx
     LIBS += -framework \
         CoreFoundation \
         -framework \
         IOKit
-#    ICON = macosx/Krok_icon.icns
-    QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
-    CONFIG += x86 ppc
+    
+    # ICON = macosx/Krok_icon.icns
+    QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.5.sdk
+    CONFIG += x86 \
+        ppc
 }

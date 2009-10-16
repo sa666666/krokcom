@@ -62,12 +62,25 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
   {
     try
     {
-      uInt16 numSectors = cart.initSectors();
-      for(uInt16 sector = 0; sector < numSectors; ++sector)
+      uInt16 sector = 0, numSectors = cart.initSectors();
+      while(sector < numSectors)
       {
-        uInt16 s = cart.writeNextSector(manager.port());
-        cout << "Sector " << setw(4) << s << " successfully sent : "
-             << setw(3) << (100*(sector+1)/numSectors) << "% complete" << endl;
+        uInt16 lower = cart.currentSector();
+        uInt16 upper = lower + BSPF_min(15, (int)(numSectors-sector-1));
+
+        cout << "Sectors " << setw(4) << lower << " - " << setw(4) << upper << " | ";
+        for(uInt16 col = 0; col < 16; ++col)
+        {
+          if(sector < numSectors)
+          {
+            cart.writeNextSector(manager.port());
+            ++sector;
+            cout << "." << flush;
+          }
+          else
+            cout << " " << flush;
+        }
+        cout << " | successfully sent : " << setw(3) << (100*sector/numSectors) << "% complete" << endl;
       }
     }
     catch(const char* msg)
@@ -92,8 +105,6 @@ int main(int ac, char* av[])
          << endl
          << "Valid options are:" << endl
          << endl
-//         << "  -bios       Treat the specified datafile as an EEPROM loader BIOS image" << endl
-//         << "              Otherwise, the datafile is treated as a ROM image instead" << endl
          << "  -bs=[type]  Specify the bankswitching scheme for a ROM image (default is 'auto')" << endl
          << "  -help       Displays the message you're now reading" << endl
          << endl

@@ -96,6 +96,13 @@ class Cart
     */
     uInt16 verifyNextSector(SerialPort& port);
 
+    /**
+      Return the current position of the sector iterator.
+
+      @return  The current sector number
+    */
+    uInt16 currentSector() const { return myCurrentSector; }
+
     /** Accessor and mutator for bankswitch type. */
     BSType getBSType() const      { return myType; }
     void   setBSType(BSType type) { myType = type; }
@@ -113,7 +120,7 @@ class Cart
     const string& message() const { return myLogMessage; }
 
     /** Auxiliary method to autodetect the bankswitch type. */
-    static BSType autodetectType(uInt8* data, uInt32 size);
+    BSType autodetectType(uInt8* data, uInt32 size) const;
 
   private:
     /**
@@ -122,6 +129,13 @@ class Cart
     */
     int readFile(const string& filename, uInt8* cartridge, uInt32 maxSize,
                  const string& type);
+
+    int readFile(const string& filename, uInt8* cartridge, uInt32 maxSize) const;
+
+    /**
+      Write the given sector to the serial port.
+    */
+    void padImage(uInt8* buffer, uInt32 bufsize, uInt32 requiredsize) const;
 
     /**
       Write the given sector to the serial port.
