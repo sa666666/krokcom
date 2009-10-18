@@ -10,5 +10,6 @@
         <file>pics/new.png</file>
         <file>pics/uparrow.png</file>
         <file>pics/downarrow.png</file>
+        <file>pics/save.png</file>
     </qresource>
 </RCC>
