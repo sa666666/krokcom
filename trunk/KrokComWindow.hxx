@@ -62,7 +62,6 @@ Q_OBJECT
     static int getRomsFromFolder(QString folder, QStringList& menuNames, QStringList& fileNames,
                                  BSType type, int maxEntries);
 
-
     void statusMessage(const QString& msg);
 
   private slots:
