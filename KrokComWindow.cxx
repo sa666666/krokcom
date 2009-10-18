@@ -100,6 +100,11 @@ KrokComWindow::KrokComWindow(QWidget* parent)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 KrokComWindow::~KrokComWindow()
 {
+  if(myFindKrokThread)
+  {
+    myFindKrokThread->quit();
+    delete myFindKrokThread;
+  }
   delete ui;
 }
 
@@ -214,6 +219,13 @@ void KrokComWindow::readSettings()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::closeEvent(QCloseEvent* event)
 {
+  // Make sure we don't prematurely kill any running threads
+  if(myFindKrokThread->isRunning())
+  {
+    event->ignore();
+    return;
+  }
+
   // Save settings
   QSettings s;
 
