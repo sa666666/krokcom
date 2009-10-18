@@ -78,6 +78,9 @@ Q_OBJECT
     void slotShowDefaultMsg();
 
     void slotSetMCBSType(int id);
+    void slotMCOpenInfoFile();
+    void slotMCNewInfoFile();
+    void slotMCSaveInfoFile();
     void slotMCAddRomButtonClicked(int row);
     void slotMCDeleteRomButtonClicked(int row);
     void slotCheckMCTable(int row, int col);

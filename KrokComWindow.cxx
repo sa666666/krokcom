@@ -170,6 +170,9 @@ void KrokComWindow::setupConnections()
   // 'Multicart' tab
   ///////////////////////////////////////////////////////////
   connect(ui->mcartBSType, SIGNAL(activated(int)), this, SLOT(slotSetMCBSType(int)));
+  connect(ui->mcartinfoOpenButton, SIGNAL(clicked()), this, SLOT(slotMCOpenInfoFile()));
+  connect(ui->mcartinfoNewButton, SIGNAL(clicked()), this, SLOT(slotMCNewInfoFile()));
+  connect(ui->mcartinfoSaveButton, SIGNAL(clicked()), this, SLOT(slotMCSaveInfoFile()));
   connect(ui->mcartTable, SIGNAL(cellChanged(int,int)), this, SLOT(slotCheckMCTable(int, int)));
   connect(ui->mcartOpenButton, SIGNAL(clicked()), this, SLOT(slotMCRomnameButton()));
   connect(ui->mcartCreateButton, SIGNAL(clicked()), this, SLOT(slotCreateMulticart()));
@@ -194,6 +197,7 @@ void KrokComWindow::readSettings()
     myCart.setRetry(retrycount);
     ui->actAutoDownFileSelect->setChecked(s.value("autodownload", false).toBool());
     ui->actAutoVerifyDownload->setChecked(s.value("autoverify", false).toBool());
+    ui->mcartTVType->setCurrentIndex(s.value("tvtype", 0).toInt());
   s.endGroup();
 
   s.beginGroup("QPButtons");
@@ -239,6 +243,7 @@ void KrokComWindow::closeEvent(QCloseEvent* event)
     s.setValue("retrycount", retrycount);
     s.setValue("autodownload", ui->actAutoDownFileSelect->isChecked());
     s.setValue("autoverify", ui->actAutoVerifyDownload->isChecked());
+    s.setValue("tvtype", ui->mcartTVType->currentIndex());
   s.endGroup();
 
   event->accept();
@@ -319,7 +324,7 @@ void KrokComWindow::slotOpenROM()
     QFileInfo(ui->romFileEdit->text()).absolutePath() :
     myLastDir.absolutePath();
   QString file = QFileDialog::getOpenFileName(this,
-    tr("Select ROM Image"), /*location*/"", tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
+    tr("Select ROM Image"), location, tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
 
   if(!file.isNull())
     loadROM(file);
@@ -595,40 +600,6 @@ void KrokComWindow::assignToQPButton(QPushButton* button, int id,
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void KrokComWindow::swapMCEntry(int offset)
-{
-  // Determine the two positions to swap
-  int current = ui->mcartTable->currentRow();
-  if(current < 0 || current >= ui->mcartTable->rowCount())
-    return;
-  offset = current - offset;
-  if(offset < 0 || offset >= ui->mcartTable->rowCount())
-    return;
-
-  QString currentMenuName, currentFileName;
-  getMCTableEntry(current, currentMenuName, currentFileName);
-
-  QString offsetMenuName, offsetFileName;
-  getMCTableEntry(offset, offsetMenuName, offsetFileName);
-
-  // Swap the name strings themselves
-  QString tmp = currentMenuName;
-  currentMenuName = offsetMenuName;
-  offsetMenuName = tmp;
-
-  tmp = currentFileName;
-  currentFileName = offsetFileName;
-  offsetFileName = tmp;
-
-  // Now swap the actual cell contents
-  setMCTableEntry(current, currentMenuName, currentFileName);
-  setMCTableEntry(offset, offsetMenuName, offsetFileName);
-
-  // Select the new row
-  ui->mcartTable->setCurrentCell(offset, ui->mcartTable->currentColumn());
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::statusMessage(const QString& msg)
 {
   // Show the message for a short time, then reset to the default message
@@ -687,18 +658,120 @@ void KrokComWindow::slotSetMCBSType(int id)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void KrokComWindow::slotMCAddRomButtonClicked(int row)
+void KrokComWindow::slotMCOpenInfoFile()
 {
   QString file = QFileDialog::getOpenFileName(this,
-    tr("Select ROM Image"), myLastDir.absolutePath(), tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
-
+    "Select Multicart Info File", myLastDir.absolutePath(), "Multicart Info File (*.mul)");
   if(file.isNull())
     return;
 
   // Remember this location for the next time a file is selected
-  myLastDir.setPath(file);
   QFileInfo info(file);
 
+  QSettings s(info.absoluteFilePath(), QSettings::IniFormat);
+  s.beginGroup("Images");
+    ui->mcartBSType->setCurrentIndex(s.value("Type", 0).toInt());
+    ui->mcartTVType->setCurrentIndex(s.value("TVType", 0).toInt());
+    ui->mcartFileEdit->setText(s.value("BinPath", "").toString());
+
+    int rows = 0, count = 0;
+    switch(ui->mcartBSType->currentIndex())
+    {
+      case 0:  rows = 127;  break;  // 4K
+      case 1:  rows = 63;   break;  // 8K
+      case 2:  rows = 31;   break;  // 16K
+      case 3:  rows = 15;   break;  // 32K
+    }
+    clearMCContents(rows);
+    QString key, menuname, filename;
+    for(int i = 1; i <= rows; ++i)
+    {
+      key.sprintf("Menu%03d", i);  menuname = s.value(key, "").toString();
+      key.sprintf("File%03d", i);  filename = s.value(key, "").toString();
+      setMCTableEntry(i-1, menuname, filename);
+      if(menuname != "" && filename != "")
+        ++count;
+    }
+  s.endGroup();
+
+  // Add the file once we're sure it contains valid data
+  myLastDir.setPath(info.absolutePath());
+  ui->mcartinfoFileEdit->setText(file);
+  statusMessage("Loaded " + QString::number(count) + " entries from multicart info file.");
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotMCNewInfoFile()
+{
+  if(countMCEntries() > 0 && QMessageBox::Yes == QMessageBox::warning(this, "Warning",
+     "Do you really want to create a new multicart info file?\nAll current selections will be lost!",
+     QMessageBox::Yes, QMessageBox::No))
+  {
+    QString file = QFileDialog::getSaveFileName(this,
+      "Select Multicart Info File", myLastDir.absolutePath(), "Multicart Info File (*.mul)");
+    ui->mcartinfoFileEdit->setText(!file.isNull() ? file : "");
+
+    int rows = 0;
+    switch(ui->mcartBSType->currentIndex())
+    {
+      case 0:  rows = 127;  break;  // 4K
+      case 1:  rows = 63;   break;  // 8K
+      case 2:  rows = 31;   break;  // 16K
+      case 3:  rows = 15;   break;  // 32K
+      default: return;
+    }
+    clearMCContents(rows);
+  }
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotMCSaveInfoFile()
+{
+  if(ui->mcartinfoFileEdit->text() == "")
+  {
+    QMessageBox::critical(this, "Missing Info File",
+      "Select a filename for the Multicart Info File.");
+    return;
+  }
+  else if(countMCEntries() == 0)
+  {
+    QMessageBox::critical(this, "Missing Entries",
+      "You must add some entries before you can\nsave a Multicart Info File.");
+    return;
+  }
+
+  QSettings s(QFileInfo(ui->mcartinfoFileEdit->text()).absoluteFilePath(), QSettings::IniFormat);
+  if(!s.isWritable())
+  {
+    QMessageBox::critical(this, "Invalid Info File",
+      "The Multicart Info filename you've\nchosen cannot be used.");
+    return;
+  }
+
+  s.beginGroup("Images");
+    s.setValue("Type", ui->mcartBSType->currentIndex());
+    s.setValue("TVType", ui->mcartTVType->currentIndex());
+    s.setValue("BinPath", ui->mcartFileEdit->text());
+
+    int count = 0;
+    QString menukey, filekey, menuname, filename;
+    for(int i = 1; i <= ui->mcartTable->rowCount(); ++i)
+    {
+      menukey.sprintf("Menu%03d", i);
+      filekey.sprintf("File%03d", i);
+      getMCTableEntry(i-1, menuname, filename);
+      s.setValue(menukey, menuname);
+      s.setValue(filekey, filename);
+      if(menuname != "" && filename != "")
+        ++count;
+    }
+  s.endGroup();
+  statusMessage("Saved " + QString::number(count) + " entries to multicart info file.");
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotMCAddRomButtonClicked(int row)
+{
   // Check if this ROM can be used for the currently selected multicart type
   int selected = ui->mcartBSType->currentIndex();
   if(selected == -1)
@@ -708,10 +781,20 @@ void KrokComWindow::slotMCAddRomButtonClicked(int row)
   switch(selected)
   {
     case 0:  desired = BS_4K;  size = "1/2/4K";  break;
-    case 1:  desired = BS_F8;  size = "1/2/4K and 8K (F8)";  break;
-    case 2:  desired = BS_F6;  size = "1/2/4K and 16K (F6)";  break;
-    case 3:  desired = BS_F4;  size = "1/2/4K and 32K (F4)";  break;
+    case 1:  desired = BS_F8;  size = "1/2/4K/8K (F8)";  break;
+    case 2:  desired = BS_F6;  size = "1/2/4K/16K (F6)";  break;
+    case 3:  desired = BS_F4;  size = "1/2/4K/32K (F4)";  break;
   }
+
+  QString file = QFileDialog::getOpenFileName(this,
+    "Select \'" + size + "\' ROM Image", myLastDir.absolutePath(), "Atari 2600 ROM Image (*.a26 *.bin *.rom)");
+
+  if(file.isNull())
+    return;
+
+  // Remember this location for the next time a file is selected
+  myLastDir.setPath(file);
+  QFileInfo info(file);
 
   // All types can also store 4K images, as well as those specific
   // to the type
@@ -719,7 +802,7 @@ void KrokComWindow::slotMCAddRomButtonClicked(int row)
   if(!(actual == desired || actual == BS_4K))
   {
     QMessageBox::critical(this, "Invalid ROM",
-      "Only " + size + " images are supported by\nthe selected multicart type.\nThe selected ROM was detected as \'" +
+      "Only \'" + size + "\' images are supported by\nthe selected multicart type.\nThe selected ROM was detected as \'" +
       QString(Bankswitch::typeToName(actual).c_str()) + "\'.");
     return;
   }
@@ -756,7 +839,7 @@ void KrokComWindow::slotMCRomnameButton()
     QFileInfo(ui->mcartFileEdit->text()).absolutePath() :
     myLastDir.absolutePath();
   QString file = QFileDialog::getOpenFileName(this,
-    tr("Select Multicart ROM Image"), location, tr("Atari 2600 ROM Image (*.a26 *.bin *.rom)"));
+    "Select Multicart ROM Image", location, "Atari 2600 ROM Image (*.a26 *.bin *.rom)");
 
   if(!file.isNull())
   {
@@ -780,8 +863,53 @@ void KrokComWindow::slotMCMoveDown()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::swapMCEntry(int offset)
+{
+  // Determine the two positions to swap
+  int current = ui->mcartTable->currentRow();
+  if(current < 0 || current >= ui->mcartTable->rowCount())
+    return;
+  offset = current - offset;
+  if(offset < 0 || offset >= ui->mcartTable->rowCount())
+    return;
+
+  QString currentMenuName, currentFileName;
+  getMCTableEntry(current, currentMenuName, currentFileName);
+
+  QString offsetMenuName, offsetFileName;
+  getMCTableEntry(offset, offsetMenuName, offsetFileName);
+
+  // Swap the name strings themselves
+  QString tmp = currentMenuName;
+  currentMenuName = offsetMenuName;
+  offsetMenuName = tmp;
+
+  tmp = currentFileName;
+  currentFileName = offsetFileName;
+  offsetFileName = tmp;
+
+  // Now swap the actual cell contents
+  setMCTableEntry(current, currentMenuName, currentFileName);
+  setMCTableEntry(offset, offsetMenuName, offsetFileName);
+
+  // Select the new row
+  ui->mcartTable->setCurrentCell(offset, ui->mcartTable->currentColumn());
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotMCAddFromDir()
 {
+  int selected = ui->mcartBSType->currentIndex();
+  BSType bstype = BS_NONE;
+  switch(selected)
+  {
+    case 0:  bstype = BS_4K;  break;
+    case 1:  bstype = BS_F8;  break;
+    case 2:  bstype = BS_F6;  break;
+    case 3:  bstype = BS_F4;  break;
+    default: return;
+  }
+
   // Adding a directory will erase all current entries; do we want that?
   if(countMCEntries() > 0)
   {
@@ -793,20 +921,11 @@ void KrokComWindow::slotMCAddFromDir()
 
   // Get a folder, and parse its contents according to the desired bankswitch type
   QString path = QFileDialog::getExistingDirectory(this,
-    tr("Browse for ROM folder"), myLastDir.absolutePath(), QFileDialog::ShowDirsOnly);
+    "Browse for \'" + QString(Bankswitch::typeToName(bstype).c_str()) +  "\' ROM folder",
+    myLastDir.absolutePath(), QFileDialog::ShowDirsOnly);
   if(path.isNull())
     return;
 
-  int selected = ui->mcartBSType->currentIndex();
-  BSType bstype = BS_NONE;
-  switch(selected)
-  {
-    case 0:  bstype = BS_4K;  break;
-    case 1:  bstype = BS_F8;  break;
-    case 2:  bstype = BS_F6;  break;
-    case 3:  bstype = BS_F4;  break;
-    default: return;
-  }
   QStringList menuNames, fileNames;
   int count = getRomsFromFolder(path, menuNames, fileNames, bstype, ui->mcartTable->rowCount());
 
@@ -815,7 +934,8 @@ void KrokComWindow::slotMCAddFromDir()
   for(int i = 0; i < count; ++i)
     setMCTableEntry(i, menuNames.at(i), fileNames.at(i));
 
-  statusMessage("Added " + QString::number(count) + " \'" + QString(Bankswitch::typeToName(bstype).c_str()) + "\' roms.");
+  statusMessage("Added " + QString::number(count) + " \'" +
+                QString(Bankswitch::typeToName(bstype).c_str()) + "\' roms.");
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

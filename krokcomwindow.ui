@@ -55,7 +55,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="romtab">
        <attribute name="title">
@@ -199,6 +199,9 @@
               <width>120</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Size of the chosen ROM image.</string>
             </property>
             <property name="frameShape">
              <enum>QFrame::Panel</enum>
@@ -403,6 +406,10 @@ supported by the Krok Cart.</string>
            <widget class="QCheckBox" name="checkBox">
             <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Only download the differences from the
+current cartridge content.</string>
             </property>
             <property name="text">
              <string>Incremental Download</string>
@@ -714,10 +721,8 @@ Left-click to use the chosen ROM.</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Override the bankswitching scheme
-for the currently selected ROM image.
-Schemes marked with (*) are not currently
-supported by the Krok Cart.</string>
+             <string>Choose the bankswitching mode
+for the multicart.</string>
             </property>
             <item>
              <property name="text">
@@ -744,7 +749,7 @@ supported by the Krok Cart.</string>
           <item>
            <widget class="QLabel" name="label_9">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="minimumSize">
              <size>
@@ -766,7 +771,7 @@ supported by the Krok Cart.</string>
           <item>
            <widget class="QLineEdit" name="mcartinfoFileEdit">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -781,7 +786,8 @@ supported by the Krok Cart.</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Copy and paste a single-load ROM image.</string>
+             <string>An info file is used to store your
+entries on this page.</string>
             </property>
             <property name="readOnly">
              <bool>false</bool>
@@ -794,7 +800,7 @@ supported by the Krok Cart.</string>
           <item>
            <widget class="QPushButton" name="mcartinfoOpenButton">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximumSize">
              <size>
@@ -803,7 +809,7 @@ supported by the Krok Cart.</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Select a single-load ROM image.</string>
+             <string>Select a multicart info file.</string>
             </property>
             <property name="text">
              <string>...</string>
@@ -813,7 +819,7 @@ supported by the Krok Cart.</string>
           <item>
            <widget class="QPushButton" name="mcartinfoNewButton">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximumSize">
              <size>
@@ -822,17 +828,22 @@ supported by the Krok Cart.</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Select a single-load ROM image.</string>
+             <string>Create a new multicart info file,
+removing all current entries.</string>
             </property>
             <property name="text">
-             <string>...</string>
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/pics/new.png</normaloff>:/icons/pics/new.png</iconset>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="mcartinfoSaveButton">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximumSize">
              <size>
@@ -841,10 +852,15 @@ supported by the Krok Cart.</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Select a single-load ROM image.</string>
+             <string>Save all current entries to a
+multicart info file.</string>
             </property>
             <property name="text">
-             <string>...</string>
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/pics/save.png</normaloff>:/icons/pics/save.png</iconset>
             </property>
            </widget>
           </item>
@@ -862,6 +878,9 @@ supported by the Krok Cart.</string>
               <width>30</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Move selected entry up one position.</string>
             </property>
             <property name="text">
              <string/>
@@ -896,6 +915,12 @@ supported by the Krok Cart.</string>
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Load all files from selected directory.</string>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -929,6 +954,9 @@ supported by the Krok Cart.</string>
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Move selected entry down one position.</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -940,6 +968,9 @@ supported by the Krok Cart.</string>
           </item>
           <item row="0" column="0" rowspan="5">
            <widget class="QTableWidget" name="mcartTable">
+            <property name="toolTip">
+             <string>Select the ROM files for your multicart here.</string>
+            </property>
             <property name="horizontalScrollBarPolicy">
              <enum>Qt::ScrollBarAlwaysOff</enum>
             </property>
@@ -1158,7 +1189,8 @@ supported by the Krok Cart.</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Copy and paste a multicart ROM image.</string>
+             <string>Name of the multicart ROM image.  Either select
+an existing file, or provide a new name.</string>
             </property>
             <property name="readOnly">
              <bool>false</bool>
@@ -1198,7 +1230,7 @@ You must select at least one ROM first.</string>
           <item>
            <widget class="QComboBox" name="mcartTVType">
             <property name="toolTip">
-             <string>Select the television type.  Note that selecting
+             <string>Select the TV menu type.  Note that selecting
 the wrong type may cause the screen to roll.</string>
             </property>
             <item>
