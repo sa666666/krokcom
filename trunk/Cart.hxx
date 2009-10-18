@@ -53,8 +53,8 @@ class Cart
       This will be a 'multi-cart' ROM, consisting of each of the separate
       ROMs, all with the same bankswitching scheme.
     */
-    bool createMultiFile(const string& romfile, BSType type, bool ntsc,
-                         const StringList& menuNames, const StringList& fileNames);
+    bool createMultiFile(const StringList& menuNames, const StringList& fileNames,
+                         BSType type, bool ntsc, const string& romfile = "");
 
     //////////////////////////////////////////////////////////////////
     //  The following two methods act as an iterator through all the
@@ -118,9 +118,6 @@ class Cart
 
     /** Get the most recent logged message. */
     const string& message() const { return myLogMessage; }
-
-    /** Auxiliary method to autodetect the bankswitch type. */
-    BSType autodetectType(uInt8* data, uInt32 size) const;
 
   private:
     /**

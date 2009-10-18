@@ -855,7 +855,7 @@ supported by the Krok Cart.</string>
           <item row="0" column="1">
            <widget class="QPushButton" name="mcartUpButton">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximumSize">
              <size>
@@ -888,7 +888,7 @@ supported by the Krok Cart.</string>
           <item row="2" column="1">
            <widget class="QPushButton" name="mcartLoadDirButton">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximumSize">
              <size>
@@ -921,7 +921,7 @@ supported by the Krok Cart.</string>
           <item row="4" column="1">
            <widget class="QPushButton" name="mcartDownButton">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximumSize">
              <size>
@@ -1158,7 +1158,7 @@ supported by the Krok Cart.</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Copy and paste a single-load ROM image.</string>
+             <string>Copy and paste a multicart ROM image.</string>
             </property>
             <property name="readOnly">
              <bool>false</bool>
@@ -1177,7 +1177,7 @@ supported by the Krok Cart.</string>
              </size>
             </property>
             <property name="toolTip">
-             <string>Select a single-load ROM image.</string>
+             <string>Select a multicart ROM image.</string>
             </property>
             <property name="text">
              <string>...</string>
@@ -1186,6 +1186,10 @@ supported by the Krok Cart.</string>
           </item>
           <item>
            <widget class="QPushButton" name="mcartCreateButton">
+            <property name="toolTip">
+             <string>Create the multicart ROM image.
+You must select at least one ROM first.</string>
+            </property>
             <property name="text">
              <string>Create</string>
             </property>
@@ -1193,6 +1197,10 @@ supported by the Krok Cart.</string>
           </item>
           <item>
            <widget class="QComboBox" name="mcartTVType">
+            <property name="toolTip">
+             <string>Select the television type.  Note that selecting
+the wrong type may cause the screen to roll.</string>
+            </property>
             <item>
              <property name="text">
               <string>NTSC</string>

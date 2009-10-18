@@ -7,7 +7,8 @@ SOURCES += main.cxx \
     KrokComWindow.cxx \
     Cart.cxx \
     CartDetector.cxx \
-    SerialPortManager.cxx
+    SerialPortManager.cxx \
+    MD5.cxx
 HEADERS += KrokComWindow.hxx \
     bspf.hxx \
     BSType.hxx \
@@ -17,7 +18,8 @@ HEADERS += KrokComWindow.hxx \
     SerialPort.hxx \
     FindKrokThread.hxx \
     Version.hxx \
-    MultiCart.hxx
+    MultiCart.hxx \
+    MD5.hxx
 FORMS += krokcomwindow.ui
 RESOURCES += resources.qrc
 unix:!macx { 

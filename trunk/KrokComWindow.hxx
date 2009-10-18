@@ -54,6 +54,14 @@ Q_OBJECT
     void loadROM(const QString& file);
     void assignToQPButton(QPushButton* button, int id);
     void assignToQPButton(QPushButton* button, int id, const QString& file, bool save);
+    void swapMCEntry(int direction);
+    int  countMCEntries() const;
+    void setMCTableEntry(int row, const QString& menuName, const QString& fileName);
+    void getMCTableEntry(int row, QString& menuName, QString& fileName) const;
+    void clearMCContents(int rows);
+    static int getRomsFromFolder(QString folder, QStringList& menuNames, QStringList& fileNames,
+                                 BSType type, int maxEntries);
+
 
     void statusMessage(const QString& msg);
 
@@ -67,18 +75,24 @@ Q_OBJECT
     void slotRetry(QAction*);
     void slotSetBSType(const QString&);
     void slotAbout();
-    void slotQPButtonClicked(int);
+    void slotQPButtonClicked(QAbstractButton* b);
     void slotShowDefaultMsg();
 
     void slotSetMCBSType(int id);
-    void slotMCOpenButtonClicked(int row);
-    void slotMCDeleteButtonClicked(int row);
+    void slotMCAddRomButtonClicked(int row);
+    void slotMCDeleteRomButtonClicked(int row);
     void slotCheckMCTable(int row, int col);
+    void slotMCRomnameButton();
+    void slotMCMoveUp();
+    void slotMCMoveDown();
+    void slotMCAddFromDir();
+
     void slotCreateMulticart();
 
   private:
     Ui::KrokComWindow* ui;
     FindKrokThread* myFindKrokThread;
+    QButtonGroup* myQPGroup;
 
     Cart myCart;
     SerialPortManager myManager;

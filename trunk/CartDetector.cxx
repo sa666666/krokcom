@@ -21,10 +21,14 @@
   @author  Stephen Anthony
 */
 
+#include <QFileInfo>
+#include <QSettings>
+
 #include <cstring>
 #include <fstream>
 
 #include "bspf.hxx"
+#include "MD5.hxx"
 #include "CartDetector.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +49,7 @@ BSType CartDetector::autodetectType(const string& rom)
       uInt8* buffer = new uInt8[length];
       in.read((char*)buffer, length);
       in.close();
-      type = autodetectType(buffer, length);
+      type = autodetectType(rom, buffer, length);
       delete[] buffer;
     }
   }
@@ -53,10 +57,14 @@ BSType CartDetector::autodetectType(const string& rom)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-BSType CartDetector::autodetectType(const uInt8* image, uInt32 size)
+BSType CartDetector::autodetectType(const string& filename, const uInt8* image, uInt32 size)
 {
-  BSType type = BS_NONE;
+  // Is this ROM in the database?
+  BSType type = getRomInfo(filename, image, size);
+  if(type != BS_NONE)
+    return type;
 
+  // Otherwise, we need to look at the image data itself
   if((size % 8448) == 0 || size == 6144)
   {
     type = BS_AR;
@@ -185,10 +193,48 @@ BSType CartDetector::autodetectType(const uInt8* image, uInt32 size)
     else if(isProbably3F(image, size))
       type = BS_3F;
     else
-      type = BS_4K;  // Most common bankswitching type
+      type = BS_NONE;
   }
 
   return type;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void CartDetector::addRomInfo(const string& filename, BSType type,
+                              const uInt8* image, uInt32 size)
+{
+  // Add info in the form 'filename/md5' = type
+  QString file  = QFileInfo(QString(filename.c_str())).canonicalFilePath();
+  QString md5   = MD5(image, size).c_str();
+  QString key   = file + "/" + md5;
+  QString value = Bankswitch::typeToName(type).c_str();
+
+  QSettings s;
+  s.beginGroup("ROM Type");
+    s.remove(file);         // Remove all keys associated with this filename
+    s.setValue(key, value); // And add this new key
+  s.endGroup();
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+BSType CartDetector::getRomInfo(const string& filename,
+                                const uInt8* image, uInt32 size)
+{
+  // Check if the type is already defined
+  // Remove any redundant entries 
+  QString file  = QFileInfo(QString(filename.c_str())).canonicalFilePath();
+  QString md5   = MD5(image, size).c_str();
+  QString key   = file + "/" + md5;
+  QString value;
+
+  QSettings s;
+  s.beginGroup("ROM Type");
+    value = s.value(key, "").toString();
+    if(value == "")
+      s.remove(file);  // Try to keep the database clean
+  s.endGroup();
+
+  return Bankswitch::nameToType(value.toStdString());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

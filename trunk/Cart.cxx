@@ -48,8 +48,8 @@ bool Cart::create(const string& filename, const string& type)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool Cart::createMultiFile(const string& romfile, BSType type, bool ntsc,
-                           const StringList& menuNames, const StringList& fileNames)
+bool Cart::createMultiFile(const StringList& menuNames, const StringList& fileNames,
+                           BSType type, bool ntsc, const string& romfile)
 {
   myIsValid = false;
   myLogMessage = "Invalid cartridge.";
@@ -100,9 +100,9 @@ bool Cart::createMultiFile(const string& romfile, BSType type, bool ntsc,
   for(int i = 0; i < numEntries; ++i)
   {
     int imgsize = readFile(fileNames[i], imgbuf, MC_ByteSizes[size]);
-    BSType type = autodetectType(imgbuf, imgsize);
+    BSType imgtype = CartDetector::autodetectType(fileNames[i], imgbuf, imgsize);
 
-    if(type == romType || type == BS_4K)
+    if(imgtype == romType || imgtype == BS_4K)
     {
       if(imgsize < MC_ByteSizes[size])
         padImage(imgbuf, imgsize, MC_ByteSizes[size]);
@@ -121,7 +121,7 @@ bool Cart::createMultiFile(const string& romfile, BSType type, bool ntsc,
     }
     else
       cout << "Multicart image " << i << " skipped; invalid bankswitch type \'"
-           << Bankswitch::typeToName(type) << "\'" << endl;
+           << Bankswitch::typeToName(imgtype) << "\'" << endl;
   }
   delete[] imgbuf;
 
@@ -133,27 +133,38 @@ bool Cart::createMultiFile(const string& romfile, BSType type, bool ntsc,
   cout << "Multicart has " << validEntries << " menu entries." << endl;
   myCart[MC_MenuOffset[size] + 2047] = (uInt8)validEntries;
 
-  myIsValid = myCartSize > 0;
+  myIsValid = validEntries > 0;
 
   // Save the image to an external file
+  ostringstream buf;
   if(myIsValid)
   {
-    ofstream out(romfile.c_str(), ios::binary);
-    if(!out)
+    if(romfile != "")
     {
-      myLogMessage = "Couldn't open multicart output file.";
-      return false;
+      ofstream out(romfile.c_str(), ios::binary);
+      if(!out)
+      {
+        myLogMessage = "Couldn't open multicart output file.";
+        return false;
+      }
+
+      out.write((char*)myCart, myCartSize);
+      cout << "Wrote out " << myCartSize << " bytes." << endl;
+      out.close();
+
+      // Add info for this ROM to the database, since autodetection won't know what it is
+      CartDetector::addRomInfo(romfile, type, myCart, myCartSize);
     }
 
-    out.write((char*)myCart, myCartSize);
-    cout << "Wrote out " << myCartSize << " bytes." << endl;
-    out.close();
-
-    ostringstream buf;
     buf << (ntsc ? "NTSC" : "PAL") << " multicart created with " << validEntries << " entries";
     if((int)menuNames.size() > validEntries)
       buf << " (skipped " << (menuNames.size() - validEntries) << ")";
     buf << ", size = " << myCartSize << ".";
+    myLogMessage = buf.str();
+  }
+  else
+  {
+    buf << "Skipped " << (numEntries - validEntries) << " invalid entries, multicart not created.";
     myLogMessage = buf.str();
   }
 
@@ -233,12 +244,6 @@ uInt16 Cart::verifyNextSector(SerialPort& port)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-BSType Cart::autodetectType(uInt8* data, uInt32 size) const
-{
-  return CartDetector::autodetectType(data, size);
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize) const
 {
   cout << "Reading from file: \'" << filename << "\'" << endl;
@@ -285,20 +290,9 @@ int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize,
   in.close();
 
   // Auto-detect the bankswitch type
-  /* TODO - do we really need to consult stella.pro anymore??
-  {   // find MD5 value
-    MD5_CTX context;
-    unsigned char digest[16];
-    MD5Init (&context);
-    MD5Update (&context, cartridge, cartsize);
-    MD5Final (digest, &context);
-    printf ("MD5 = ");
-    MDPrint (digest);
-  }
-  */
   if(myType == BS_AUTO || type == "")
   {
-    myType = autodetectType(cartridge, cartsize);
+    myType = CartDetector::autodetectType(filename, cartridge, cartsize);
     cout << "Bankswitch type: " << Bankswitch::typeToName(myType)
          << " (auto-detected)" << endl;
   }

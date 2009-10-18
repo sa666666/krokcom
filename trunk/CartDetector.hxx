@@ -40,11 +40,15 @@ class CartDetector
     /**
       Try to auto-detect the bankswitching type of the cartridge
 
+      @param rom    The file containing the ROM image
       @param image  A pointer to the ROM image
       @param size   The size of the ROM image
       @return  The "best guess" for the cartridge type
     */
-    static BSType autodetectType(const uInt8* image, uInt32 size);
+    static BSType autodetectType(const string& rom, const uInt8* image, uInt32 size);
+
+    static void addRomInfo(const string& filename, BSType type, const uInt8* image, uInt32 size);
+    static BSType getRomInfo(const string& filename, const uInt8* image, uInt32 size);
 
   private:
     /**

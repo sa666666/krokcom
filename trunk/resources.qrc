@@ -5,10 +5,10 @@
         <file>pics/cart.png</file>
         <file>pics/ledon.png</file>
         <file>pics/appicon.png</file>
-        <file>pics/downarrow.png</file>
         <file>pics/plus.png</file>
-        <file>pics/uparrow.png</file>
         <file>pics/delete.png</file>
         <file>pics/new.png</file>
+        <file>pics/uparrow.png</file>
+        <file>pics/downarrow.png</file>
     </qresource>
 </RCC>
