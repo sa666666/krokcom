@@ -95,6 +95,8 @@ KrokComWindow::KrokComWindow(QWidget* parent)
 
   // By default, start looking for ROMs in the users' home directory
   myLastDir.setPath(QDir::home().absolutePath());
+
+  Cart::setLastRomFilePath("LASTROM.bin"); // FIXME
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -378,7 +380,7 @@ void KrokComWindow::slotDownloadROM()
   if(sector == numSectors)
   {
     progress.setValue(numSectors);
-    statusMessage("Cartridge downloaded.");
+    statusMessage("Cartridge downloaded, wrote " + QString::number(numSectors) + " sectors.");
 
     ui->verifyButton->setDisabled(false);  ui->actVerifyROM->setDisabled(false);
 

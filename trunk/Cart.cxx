@@ -31,6 +31,7 @@ Cart::Cart()
   : myCartSize(0),
     myRetry(0),
     myType(BS_NONE),
+    myIncremental(true), // FIXME
     myCurrentSector(0),
     myNumSectors(0),
     myIsValid(false),
@@ -41,9 +42,85 @@ Cart::Cart()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool Cart::create(const string& filename, const string& type)
 {
+  // Get the cart image
   memset(myCart, 0, MAXCARTSIZE);
-  myCartSize = readFile(filename, myCart, MAXCARTSIZE, type);
+  myCartSize = readFile(filename, myCart, MAXCARTSIZE);
+
+  // Auto-detect the bankswitch type
+  if(myType == BS_AUTO || type == "")
+  {
+    myType = CartDetector::autodetectType(filename, myCart, myCartSize);
+    cout << "Bankswitch type: " << Bankswitch::typeToName(myType)
+         << " (auto-detected)" << endl;
+  }
+  else
+  {
+    myType = Bankswitch::nameToType(type);
+    cout << "Bankswitch type: " << Bankswitch::typeToName(myType)
+         << " (WARNING: overriding auto-detection)" << endl;
+  }
+  switch(myType)
+  {
+    case BS_F0:
+    case BS_E0:
+    case BS_FE:
+    case BS_AR:
+    case BS_NONE:
+    case BS_DPC:
+    case BS_4A50:
+    case BS_X07:
+    case BS_SB:
+    case BS_MC:
+      cout << "Warning - The Krokodile Cartridge does not support this type of bank switching" << endl;
+      break;
+    default:
+      break;
+  }
+
+  // Pad sub-4K images to minimum size
+  if(myType == BS_4K && myCartSize < 4096)
+  {
+    padImage(myCart, myCartSize, 4096);
+    myCartSize = 4096;
+  }
+
+  // 3F and 3E carts need the upper bank in uppermost part of the ROM
+  if(myType == BS_3F || myType == BS_3E)
+    for(int i = 0; i < 2048; i++)
+      myCart[MAXCARTSIZE - 2048 + i] = myCart[myCartSize - 2048 + i];
+
+  for(uInt32 i = 0; i < MAXCARTSIZE/256; ++i)
+    myModifiedSectors[i] = true;
+
   myIsValid = myCartSize > 0;
+  if(myIsValid)
+  {
+    // Compare the newly created image to the previous one for use in incremental downloading
+    if(ourLastCart != "")
+    {
+      // Read the last rom written
+      uInt8 buffer[MAXCARTSIZE];
+      memset(buffer, 0, MAXCARTSIZE);
+      readFile(ourLastCart, buffer, MAXCARTSIZE);
+
+      // Determine which 256 byte blocks differ
+      int count = 0;
+      uInt8 *cart = myCart, *buf = buffer;
+      for(uInt32 i = 0; i < myCartSize/256; ++i, cart += 256, buf += 256)
+      {
+        myModifiedSectors[i] = memcmp(cart, buf, 256) != 0;
+        if(myModifiedSectors[i])  ++count;
+      }
+
+      // Write out the current ROM to use for comparison next time
+      writeFile(ourLastCart, myCart, MAXCARTSIZE);
+
+      if(myIncremental)
+        cout << "Incremental download mode, " << count << " / "
+             << (myCartSize/256) << " sectors are changed." << endl;
+    }
+  }
+
   return myIsValid;
 }
 
@@ -141,16 +218,11 @@ bool Cart::createMultiFile(const StringList& menuNames, const StringList& fileNa
   {
     if(romfile != "")
     {
-      ofstream out(romfile.c_str(), ios::binary);
-      if(!out)
+      if(writeFile(romfile, myCart, myCartSize) == 0)
       {
         myLogMessage = "Couldn't open multicart output file.";
         return false;
       }
-
-      out.write((char*)myCart, myCartSize);
-      cout << "Wrote out " << myCartSize << " bytes." << endl;
-      out.close();
 
       // Add info for this ROM to the database, since autodetection won't know what it is
       CartDetector::addRomInfo(romfile, type, myCart, myCartSize);
@@ -199,11 +271,16 @@ uInt16 Cart::writeNextSector(SerialPort& port)
 
   uInt16 sector = myCurrentSector;
   uInt32 retry = 0;
-  bool status;
-  while(!(status = downloadSector(sector, port)) && retry++ < myRetry)
-    cout << "Write transmission of sector " <<  sector << " failed, retry " << retry << endl;
-  if(!status)
-    throw "write: failed max retries";
+
+  // Only write the sector if it has changed
+  if(!myIncremental || myModifiedSectors[sector])
+  {
+    bool status;
+    while(!(status = downloadSector(sector, port)) && retry++ < myRetry)
+      cout << "Write transmission of sector " <<  sector << " failed, retry " << retry << endl;
+    if(!status)
+      throw "write: failed max retries";
+  }
 
   // Handle 3F and 3E carts, which are a little different from the rest
   // There are two ranges of sectors; the second starts once we past the
@@ -226,11 +303,16 @@ uInt16 Cart::verifyNextSector(SerialPort& port)
 
   uInt16 sector = myCurrentSector;
   uInt32 retry = 0;
-  bool status;
-  while(!(status = verifySector(sector, port)) && retry++ < myRetry)
-    cout << "Read transmission of sector " <<  sector << " failed, retry " << retry << endl;
-  if(!status)
-    throw "verify: failed max retries";
+
+  // Only verify the sector if it has changed
+  if(!myIncremental || myModifiedSectors[sector])
+  {
+    bool status;
+    while(!(status = verifySector(sector, port)) && retry++ < myRetry)
+      cout << "Read transmission of sector " <<  sector << " failed, retry " << retry << endl;
+    if(!status)
+      throw "verify: failed max retries";
+  }
 
   // Handle 3F and 3E carts, which are a little different from the rest
   // There are two ranges of sectors; the second starts once we past the
@@ -244,9 +326,9 @@ uInt16 Cart::verifyNextSector(SerialPort& port)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize) const
+uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize) const
 {
-  cout << "Reading from file: \'" << filename << "\'" << endl;
+  cout << "Reading from file: \'" << filename << "\' ... ";
 
   // Read file into buffer
   ifstream in(filename.c_str(), ios::binary);
@@ -257,85 +339,30 @@ int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize) con
   in.seekg(0, ios::end);
   streampos length = in.tellg();
   in.seekg(0, ios::beg);
-  uInt32 cartsize = length > maxSize ? maxSize : (uInt32)length;
+  uInt32 size = length > maxSize ? maxSize : (uInt32)length;
 
-  in.read((char*)cartridge, cartsize);
-  cout << "Read in " << cartsize << " bytes" << endl;
+  in.read((char*)buffer, size);
+  cout << "read in " << size << " bytes" << endl;
   in.close();
 
-  return cartsize;
+  return size;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-int Cart::readFile(const string& filename, uInt8* cartridge, uInt32 maxSize,
-                   const string& type)
+uInt32 Cart::writeFile(const string& filename, uInt8* buffer, uInt32 size) const
 {
-  cout << "Reading from file: \'" << filename << "\'" << endl;
+  cout << "Writing to file: \'" << filename << "\' ... ";
 
-  uInt32 minsize = (maxSize != MAXCARTSIZE) ? maxSize : 4096;
-
-  // Read file into buffer
-  ifstream in(filename.c_str(), ios::binary);
-  if(!in)
+  // Write to file from buffer
+  ofstream out(filename.c_str(), ios::binary);
+  if(!out)
     return 0;
 
-  // Figure out how much data we should read
-  in.seekg(0, ios::end);
-  streampos length = in.tellg();
-  in.seekg(0, ios::beg);
-  uInt32 cartsize = length > maxSize ? maxSize : (uInt32)length;
+  out.write((char*)buffer, size);
+  cout << "wrote out " << size << " bytes" << endl;
+  out.close();
 
-  in.read((char*)cartridge, cartsize);
-  cout << "Read in " << cartsize << " bytes" << endl;
-  in.close();
-
-  // Auto-detect the bankswitch type
-  if(myType == BS_AUTO || type == "")
-  {
-    myType = CartDetector::autodetectType(filename, cartridge, cartsize);
-    cout << "Bankswitch type: " << Bankswitch::typeToName(myType)
-         << " (auto-detected)" << endl;
-  }
-  else
-  {
-    myType = Bankswitch::nameToType(type);
-    cout << "Bankswitch type: " << Bankswitch::typeToName(myType)
-         << " (WARNING: overriding auto-detection)" << endl;
-  }
-  switch(myType)
-  {
-    case BS_F0:
-    case BS_E0:
-    case BS_FE:
-    case BS_AR:
-    case BS_NONE:
-    case BS_DPC:
-    case BS_4A50:
-    case BS_X07:
-    case BS_SB:
-    case BS_MC:
-      cout << "Warning - The Krokodile Cartridge does not support this type of bank switching" << endl;
-      break;
-    default:
-      break;
-  }
-
-  // Pad buffer to minimum size
-  if(cartsize < minsize)
-  {
-    cout << "  Converting to " << (minsize/1024) << "K." << endl;
-    int i = 0;
-    while(cartsize < minsize)
-      cartridge[cartsize++] = cartridge[i++];
-  }
-  cout << endl;
-
-  // 3F and 3E carts need the upper bank in uppermost part of the ROM
-  if(myType == BS_3F || myType == BS_3E)
-    for(int i = 0; i < 2048; i++)
-      myCart[MAXCARTSIZE - 2048 + i] = myCart[cartsize - 2048 + i];
-
-  return cartsize;
+  return size;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -359,7 +386,6 @@ void Cart::padImage(uInt8* buffer, uInt32 bufsize, uInt32 requiredsize) const
     for(uInt32 i = 1; i < requiredsize/power2; ++i, tmp_ptr += power2)
       memcpy(tmp_ptr, buffer, bufsize);
   }
-  cout << endl;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -499,3 +525,6 @@ void Cart::menuEntry(uInt8* menuentry, const string& menuname) const
     menuentry[charpos - 1] = menuentry[charpos];
   menuentry[12] = first;
 }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+string Cart::ourLastCart = "";

@@ -107,6 +107,10 @@ class Cart
     BSType getBSType() const      { return myType; }
     void   setBSType(BSType type) { myType = type; }
 
+    /** Accessor and mutator for incremental download. */
+    bool getIncremental() const      { return myIncremental;   }
+    void setIncremental(bool enable) { myIncremental = enable; }
+
     /** Set number of write retries before bailing out. */
     void setRetry(int retry) { myRetry = retry; }
 
@@ -119,15 +123,22 @@ class Cart
     /** Get the most recent logged message. */
     const string& message() const { return myLogMessage; }
 
+    static void setLastRomFilePath(const string& rom) { ourLastCart = rom; }
+
   private:
     /**
       Read data from given file and place it in the given buffer.
-      The bankswitch type is also autodetected here.
-    */
-    int readFile(const string& filename, uInt8* cartridge, uInt32 maxSize,
-                 const string& type);
 
-    int readFile(const string& filename, uInt8* cartridge, uInt32 maxSize) const;
+      @return  The number of bytes read (0 indicates error).
+    */
+    uInt32 readFile(const string& filename, uInt8* buffer, uInt32 maxSize) const;
+
+    /**
+      Write data from the given buffer to the given file.
+
+      @return  The number of bytes written (0 indicates error).
+    */
+    uInt32 writeFile(const string& filename, uInt8* buffer, uInt32 size) const;
 
     /**
       Write the given sector to the serial port.
@@ -154,13 +165,17 @@ class Cart
     uInt32 myCartSize;
     uInt32 myRetry;
     BSType myType;
+    bool   myIncremental;
 
     // The following keep track of progress of sector writes
     uInt16 myCurrentSector;
     uInt16 myNumSectors;
+    bool myModifiedSectors[MAXCARTSIZE/256];
 
     bool myIsValid;
     string myLogMessage;
+
+    static string ourLastCart;
 };
 
 #endif
