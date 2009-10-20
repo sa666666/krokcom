@@ -687,7 +687,7 @@ Left-click to use the chosen ROM.</string>
        <attribute name="title">
         <string>Multicart</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
@@ -804,7 +804,7 @@ entries on this page.</string>
             </property>
             <property name="maximumSize">
              <size>
-              <width>30</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -823,8 +823,8 @@ entries on this page.</string>
             </property>
             <property name="maximumSize">
              <size>
-              <width>30</width>
-              <height>16777215</height>
+              <width>24</width>
+              <height>24</height>
              </size>
             </property>
             <property name="toolTip">
@@ -847,8 +847,8 @@ removing all current entries.</string>
             </property>
             <property name="maximumSize">
              <size>
-              <width>30</width>
-              <height>16777215</height>
+              <width>24</width>
+              <height>24</height>
              </size>
             </property>
             <property name="toolTip">
@@ -867,106 +867,8 @@ multicart info file.</string>
          </layout>
         </item>
         <item>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="1">
-           <widget class="QPushButton" name="mcartUpButton">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>30</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Move selected entry up one position.</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="resources.qrc">
-              <normaloff>:/icons/pics/uparrow.png</normaloff>:/icons/pics/uparrow.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="mcartLoadDirButton">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>30</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Load all files from selected directory.</string>
-            </property>
-            <property name="statusTip">
-             <string/>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="resources.qrc">
-              <normaloff>:/icons/pics/plus.png</normaloff>:/icons/pics/plus.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="4" column="1">
-           <widget class="QPushButton" name="mcartDownButton">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>30</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Move selected entry down one position.</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="resources.qrc">
-              <normaloff>:/icons/pics/downarrow.png</normaloff>:/icons/pics/downarrow.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" rowspan="5">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
            <widget class="QTableWidget" name="mcartTable">
             <property name="toolTip">
              <string>Select the ROM files for your multicart here.</string>
@@ -1151,6 +1053,108 @@ multicart info file.</string>
             </item>
            </widget>
           </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QPushButton" name="mcartUpButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>30</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>Move selected entry up one position.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/pics/uparrow.png</normaloff>:/icons/pics/uparrow.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mcartLoadDirButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>30</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>Load all files from selected directory.</string>
+              </property>
+              <property name="statusTip">
+               <string/>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/pics/plus.png</normaloff>:/icons/pics/plus.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mcartDownButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>30</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>Move selected entry down one position.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/pics/downarrow.png</normaloff>:/icons/pics/downarrow.png</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </item>
         <item>
@@ -1204,7 +1208,7 @@ an existing file, or provide a new name.</string>
            <widget class="QPushButton" name="mcartOpenButton">
             <property name="maximumSize">
              <size>
-              <width>30</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -1259,7 +1263,7 @@ the wrong type may cause the screen to roll.</string>
      <x>0</x>
      <y>0</y>
      <width>720</width>
-     <height>28</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

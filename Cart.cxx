@@ -31,7 +31,7 @@ Cart::Cart()
   : myCartSize(0),
     myRetry(0),
     myType(BS_NONE),
-    myIncremental(true), // FIXME
+    myIncremental(false),
     myCurrentSector(0),
     myNumSectors(0),
     myIsValid(false),
