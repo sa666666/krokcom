@@ -403,9 +403,9 @@ supported by the Krok Cart.</string>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="incDownloadCheckBox">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="toolTip">
              <string>Only download the differences from the
@@ -1263,7 +1263,7 @@ the wrong type may cause the screen to roll.</string>
      <x>0</x>
      <y>0</y>
      <width>720</width>
-     <height>28</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

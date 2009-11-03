@@ -149,6 +149,7 @@ void KrokComWindow::setupConnections()
   connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(slotDownloadROM()));
   connect(ui->verifyButton, SIGNAL(clicked()), this, SLOT(slotVerifyROM()));
   connect(ui->romBSType, SIGNAL(activated(const QString&)), this, SLOT(slotSetBSType(const QString&)));
+  connect(ui->incDownloadCheckBox, SIGNAL(clicked(bool)), this, SLOT(slotEnableIncDownload(bool)));
 
   // Quick-select buttons
   myQPGroup = new QButtonGroup(this);
@@ -202,6 +203,7 @@ void KrokComWindow::readSettings()
     myCart.setRetry(retrycount);
     bool incremental = s.value("incremental", false).toBool();
     ui->actIncDownload->setChecked(incremental);
+    ui->incDownloadCheckBox->setChecked(incremental);
     myCart.setIncremental(incremental);
     ui->actAutoDownFileSelect->setChecked(s.value("autodownload", false).toBool());
     ui->actAutoVerifyDownload->setChecked(s.value("autoverify", false).toBool());
@@ -455,6 +457,8 @@ void KrokComWindow::slotVerifyROM()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void KrokComWindow::slotEnableIncDownload(bool enable)
 {
+  ui->actIncDownload->setChecked(enable);
+  ui->incDownloadCheckBox->setChecked(enable);
   myCart.setIncremental(enable);
 }
 
