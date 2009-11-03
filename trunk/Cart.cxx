@@ -353,10 +353,10 @@ bool Cart::finalizeSectors()
       for(uInt32 i = 0; i < myCartSize/256; ++i)
         if(myModifiedSectors[i])  ++count;
 
-      out << "Incremental download, wrote " << count << " / " << myNumSectors << " sectors.";
+      out << "Incremental download complete, wrote " << count << " / " << myNumSectors << " sectors.";
     }
     else
-      out << "Download, wrote " << myNumSectors << " sectors.";
+      out << "Download complete, wrote " << myNumSectors << " sectors.";
 
     // Write out the current ROM to use for comparison next time
     writeFile(ourLastCart, myCart, MAXCARTSIZE, false);
@@ -454,7 +454,7 @@ bool Cart::downloadSector(uInt32 sector, SerialPort& port) const
   buffer[261] = chksum;
 
   // Write sector to serial port
-  if(port.sendBlock(buffer, 262) != 262)
+  if(port.send(buffer, 262) != 262)
   {
     cout << "Transmission error in downloadSector" << endl;
     return false;
@@ -462,7 +462,7 @@ bool Cart::downloadSector(uInt32 sector, SerialPort& port) const
 
   // Check return code of sector write
   uInt8 result = 0;
-  port.receiveBlock(&result, 1);
+  port.receive(&result, 1);
 
   // Check return code
   if(result == 0x7c)
@@ -496,7 +496,7 @@ bool Cart::verifySector(uInt32 sector, SerialPort& port) const
   buffer[4] = chksum;                        // Chksum
 
   // Write command to serial port
-  if(port.sendBlock(buffer, 5) != 5)
+  if(port.send(buffer, 5) != 5)
   {
     cout << "Write transmission error of command in verifySector" << endl;
     return false;
@@ -504,7 +504,7 @@ bool Cart::verifySector(uInt32 sector, SerialPort& port) const
 
   // Check return code of command write
   uInt8 result = 0;
-  port.receiveBlock(&result, 1);
+  port.receive(&result, 1);
 
   // Check return code
   if(result == 0x00)
@@ -523,11 +523,11 @@ bool Cart::verifySector(uInt32 sector, SerialPort& port) const
   do
   {
     uInt8 data = 0;
-    if(port.receiveBlock(&data, 1) == 1)
+    if(port.receive(&data, 1) == 1)
       buffer[BytesRead++] = data;
   }
   while(BytesRead < 257);
-  port.sendBlock(buffer, 1);  // Send an Ack
+  port.send(buffer, 1);  // Send an Ack
 
   // Make sure the data chksum matches
   chksum = 0;
