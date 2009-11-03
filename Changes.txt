@@ -10,8 +10,8 @@
                              Release History
 ===========================================================================
 
-0.1: (May xx, 2009)
+1.0: (November xx, 2009)
 
-  * TODO!
+  * Initial release for Linux/UNIX and Mac OSX.
 
 -Have fun!
