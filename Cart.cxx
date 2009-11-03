@@ -71,8 +71,13 @@ bool Cart::create(const string& filename, const string& type)
     case BS_X07:
     case BS_SB:
     case BS_MC:
-      cout << "Warning - The Krokodile Cartridge does not support this type of bank switching" << endl;
-      break;
+    {
+      ostringstream out;
+      out << "Bankswitch mode \'" << Bankswitch::typeToName(myType) << "\' is not supported.";
+      myLogMessage = out.str();
+      cout << myLogMessage << endl;
+      return myIsValid = false;
+    }
     default:
       break;
   }
@@ -94,33 +99,11 @@ bool Cart::create(const string& filename, const string& type)
 
   myIsValid = myCartSize > 0;
   if(myIsValid)
-  {
-    // Compare the newly created image to the previous one for use in incremental downloading
-    if(ourLastCart != "")
-    {
-      // Read the last rom written
-      uInt8 buffer[MAXCARTSIZE];
-      memset(buffer, 0, MAXCARTSIZE);
-      readFile(ourLastCart, buffer, MAXCARTSIZE);
+    myLogMessage = "Cartridge is valid.";
+  else
+    myLogMessage = "Invalid cartridge.";
 
-      // Determine which 256 byte blocks differ
-      int count = 0;
-      uInt8 *cart = myCart, *buf = buffer;
-      for(uInt32 i = 0; i < myCartSize/256; ++i, cart += 256, buf += 256)
-      {
-        myModifiedSectors[i] = memcmp(cart, buf, 256) != 0;
-        if(myModifiedSectors[i])  ++count;
-      }
-
-      // Write out the current ROM to use for comparison next time
-      writeFile(ourLastCart, myCart, MAXCARTSIZE);
-
-      if(myIncremental)
-        cout << "Incremental download mode, " << count << " / "
-             << (myCartSize/256) << " sectors are changed." << endl;
-    }
-  }
-
+  cout << myLogMessage << endl;
   return myIsValid;
 }
 
@@ -245,7 +228,7 @@ bool Cart::createMultiFile(const StringList& menuNames, const StringList& fileNa
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt16 Cart::initSectors()
+uInt16 Cart::initSectors(bool downloadMode)
 {
   myCurrentSector = 0;
 
@@ -254,6 +237,42 @@ uInt16 Cart::initSectors()
     myNumSectors = myCartSize / 256;        // the number of 256 byte sectors
     if(myType == BS_3F || myType == BS_3E)  // 3F and 3E add 8 more (2040 - 2047)
       myNumSectors += 8;
+
+    for(uInt32 i = 0; i < MAXCARTSIZE/256; ++i)
+      myModifiedSectors[i] = true;
+
+    // Determine which sectors should be written to the KrokCart
+    if(downloadMode)
+    {
+      ostringstream out;
+      if(myIncremental)
+      {
+        // Read the last rom written
+        uInt8 buffer[MAXCARTSIZE];
+        memset(buffer, 0, MAXCARTSIZE);
+        readFile(ourLastCart, buffer, MAXCARTSIZE, false);
+
+        // Determine which 256 byte blocks differ
+        int count = 0;
+        uInt8 *cart = myCart, *buf = buffer;
+        for(uInt32 i = 0; i < myCartSize/256; ++i, cart += 256, buf += 256)
+        {
+          myModifiedSectors[i] = memcmp(cart, buf, 256) != 0;
+          if(myModifiedSectors[i])  ++count;
+        }
+
+        out << "Incremental download mode, " << count << " / "
+            << (myCartSize/256) << " sectors are changed.";
+        myLogMessage = out.str();
+      }
+      else
+      {
+        out << "Normal download mode, " << myNumSectors << " / "
+            << (myCartSize/256) << " sectors are changed.";
+        myLogMessage = out.str();
+      }
+      cout << myLogMessage << endl;
+    }
   }
   else
     myNumSectors = 0;
@@ -304,15 +323,11 @@ uInt16 Cart::verifyNextSector(SerialPort& port)
   uInt16 sector = myCurrentSector;
   uInt32 retry = 0;
 
-  // Only verify the sector if it has changed
-  if(!myIncremental || myModifiedSectors[sector])
-  {
-    bool status;
-    while(!(status = verifySector(sector, port)) && retry++ < myRetry)
-      cout << "Read transmission of sector " <<  sector << " failed, retry " << retry << endl;
-    if(!status)
-      throw "verify: failed max retries";
-  }
+  bool status;
+  while(!(status = verifySector(sector, port)) && retry++ < myRetry)
+    cout << "Read transmission of sector " <<  sector << " failed, retry " << retry << endl;
+  if(!status)
+    throw "verify: failed max retries";
 
   // Handle 3F and 3E carts, which are a little different from the rest
   // There are two ranges of sectors; the second starts once we past the
@@ -326,9 +341,40 @@ uInt16 Cart::verifyNextSector(SerialPort& port)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize) const
+bool Cart::finalizeSectors()
 {
-  cout << "Reading from file: \'" << filename << "\' ... ";
+  bool status = false;
+  ostringstream out;
+  if(myCurrentSector == myNumSectors)
+  {
+    if(myIncremental)
+    {
+      int count = 0;
+      for(uInt32 i = 0; i < myCartSize/256; ++i)
+        if(myModifiedSectors[i])  ++count;
+
+      out << "Incremental download, wrote " << count << " / " << myNumSectors << " sectors.";
+    }
+    else
+      out << "Download, wrote " << myNumSectors << " sectors.";
+
+    // Write out the current ROM to use for comparison next time
+    writeFile(ourLastCart, myCart, MAXCARTSIZE, false);
+
+    status = true;
+  }
+  else
+    out <<  "Download failure on sector " << myCurrentSector << ".";
+
+  myLogMessage = out.str();
+  return status;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize,
+                      bool showmessage) const
+{
+  if(showmessage) cout << "Reading from file: \'" << filename << "\' ... ";
 
   // Read file into buffer
   ifstream in(filename.c_str(), ios::binary);
@@ -342,16 +388,17 @@ uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize) con
   uInt32 size = length > maxSize ? maxSize : (uInt32)length;
 
   in.read((char*)buffer, size);
-  cout << "read in " << size << " bytes" << endl;
+  if(showmessage) cout << "read in " << size << " bytes" << endl;
   in.close();
 
   return size;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt32 Cart::writeFile(const string& filename, uInt8* buffer, uInt32 size) const
+uInt32 Cart::writeFile(const string& filename, uInt8* buffer, uInt32 size,
+                       bool showmessage) const
 {
-  cout << "Writing to file: \'" << filename << "\' ... ";
+  if(showmessage) cout << "Writing to file: \'" << filename << "\' ... ";
 
   // Write to file from buffer
   ofstream out(filename.c_str(), ios::binary);
@@ -359,7 +406,7 @@ uInt32 Cart::writeFile(const string& filename, uInt8* buffer, uInt32 size) const
     return 0;
 
   out.write((char*)buffer, size);
-  cout << "wrote out " << size << " bytes" << endl;
+  if(showmessage) cout << "wrote out " << size << " bytes" << endl;
   out.close();
 
   return size;

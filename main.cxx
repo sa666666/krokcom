@@ -62,7 +62,7 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
   {
     try
     {
-      uInt16 sector = 0, numSectors = cart.initSectors();
+      uInt16 sector = 0, numSectors = cart.initSectors(true);
       while(sector < numSectors)
       {
         uInt16 lower = cart.currentSector();

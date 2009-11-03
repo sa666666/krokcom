@@ -96,7 +96,9 @@ KrokComWindow::KrokComWindow(QWidget* parent)
   // By default, start looking for ROMs in the users' home directory
   myLastDir.setPath(QDir::home().absolutePath());
 
-  Cart::setLastRomFilePath("LASTROM.bin"); // FIXME
+  // Store last ROM info in '$HOME/.KCLASTROM.bin'
+  QString lastrom = QDir(QDir::home().absolutePath() + "/.KCLASTROM.bin").absolutePath();
+  Cart::setLastRomFilePath(lastrom.toStdString());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,6 +125,7 @@ void KrokComWindow::setupConnections()
   connect(ui->actConnectKrokCart, SIGNAL(triggered()), this, SLOT(slotConnectKrokCart()));
 
   // Options menu
+  connect(ui->actIncDownload, SIGNAL(triggered(bool)), this, SLOT(slotEnableIncDownload(bool)));
   QActionGroup* group = new QActionGroup(this);
   group->setExclusive(true);
   group->addAction(ui->actRetry0);
@@ -197,6 +200,9 @@ void KrokComWindow::readSettings()
     else if(retrycount == 2)  ui->actRetry2->setChecked(true);
     else if(retrycount == 3)  ui->actRetry3->setChecked(true);
     myCart.setRetry(retrycount);
+    bool incremental = s.value("incremental", false).toBool();
+    ui->actIncDownload->setChecked(incremental);
+    myCart.setIncremental(incremental);
     ui->actAutoDownFileSelect->setChecked(s.value("autodownload", false).toBool());
     ui->actAutoVerifyDownload->setChecked(s.value("autoverify", false).toBool());
     ui->mcartTVType->setCurrentIndex(s.value("tvtype", 0).toInt());
@@ -245,6 +251,7 @@ void KrokComWindow::closeEvent(QCloseEvent* event)
     s.setValue("retrycount", retrycount);
     s.setValue("autodownload", ui->actAutoDownFileSelect->isChecked());
     s.setValue("autoverify", ui->actAutoVerifyDownload->isChecked());
+    s.setValue("incremental", ui->actIncDownload->isChecked());
     s.setValue("tvtype", ui->mcartTVType->currentIndex());
   s.endGroup();
 
@@ -358,7 +365,7 @@ void KrokComWindow::slotDownloadROM()
   myDownloadInProgress = true;
 
   // Write to serial port
-  uInt16 sector = 0, numSectors = myCart.initSectors();
+  uInt16 sector = 0, numSectors = myCart.initSectors(true);
   QProgressDialog progress("Downloading ROM...", QString(), 0, numSectors, this);
   progress.setWindowIcon(QPixmap(":icons/pics/appicon.png"));
   progress.setWindowModality(Qt::WindowModal);
@@ -377,10 +384,10 @@ void KrokComWindow::slotDownloadROM()
   }
   myDownloadInProgress = false;
 
-  if(sector == numSectors)
+  progress.setValue(numSectors);
+  if(myCart.finalizeSectors())
   {
-    progress.setValue(numSectors);
-    statusMessage("Cartridge downloaded, wrote " + QString::number(numSectors) + " sectors.");
+    statusMessage(QString(myCart.message().c_str()));
 
     ui->verifyButton->setDisabled(false);  ui->actVerifyROM->setDisabled(false);
 
@@ -389,7 +396,7 @@ void KrokComWindow::slotDownloadROM()
       slotVerifyROM();
   }
   else
-    statusMessage("Download failure on sector " + QString::number(sector) + ".");
+    statusMessage(QString(myCart.message().c_str()));
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -416,7 +423,7 @@ void KrokComWindow::slotVerifyROM()
   myDownloadInProgress = true;
 
   // Verify data previously written to serial port
-  uInt16 sector = 0, numSectors = myCart.initSectors();
+  uInt16 sector = 0, numSectors = myCart.initSectors(false);
   QProgressDialog progress("Verifying ROM...", QString(), 0, numSectors, this);
   progress.setWindowIcon(QPixmap(":icons/pics/appicon.png"));
   progress.setWindowModality(Qt::WindowModal);
@@ -443,6 +450,12 @@ void KrokComWindow::slotVerifyROM()
     statusMessage("Verify failure on sector " + QString::number(sector) + ".");
 
   myDownloadInProgress = false;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void KrokComWindow::slotEnableIncDownload(bool enable)
+{
+  myCart.setIncremental(enable);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -532,7 +545,7 @@ void KrokComWindow::slotQPButtonClicked(QAbstractButton* b)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void KrokComWindow::loadROM(const QString& file)
+void KrokComWindow::loadROM(const QString& file, bool showmessage)
 {
   if(file == "")
     return;
@@ -543,6 +556,7 @@ void KrokComWindow::loadROM(const QString& file)
 
   // Create a cart from the given filename
   myCart.create(file.toStdString());
+  if(showmessage) statusMessage(QString(myCart.message().c_str()));
 
   if(myCart.isValid())
   {
@@ -559,8 +573,6 @@ void KrokComWindow::loadROM(const QString& file)
     if(ui->actAutoDownFileSelect->isChecked())
       slotDownloadROM();
   }
-  else
-    statusMessage("Invalid cartridge.");
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1106,4 +1118,6 @@ void KrokComWindow::slotCreateMulticart()
                          ui->mcartFileEdit->text().toStdString());
 
   statusMessage(QString(myCart.message().c_str()));
+
+  loadROM(ui->mcartFileEdit->text(), false);
 }

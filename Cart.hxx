@@ -70,7 +70,7 @@ class Cart
 
       @return  The number of sectors that need to be accessed
     */
-    uInt16 initSectors();
+    uInt16 initSectors(bool downloadMode);
 
     /**
       Write the next sector in the iterator to the serial port,
@@ -95,6 +95,13 @@ class Cart
                on any errors
     */
     uInt16 verifyNextSector(SerialPort& port);
+
+    /**
+      Finalizes the sector iterator after all sectors have been downloaded.
+
+      @return  True if all sectors were written, else false.
+    */
+    bool finalizeSectors();
 
     /**
       Return the current position of the sector iterator.
@@ -131,14 +138,14 @@ class Cart
 
       @return  The number of bytes read (0 indicates error).
     */
-    uInt32 readFile(const string& filename, uInt8* buffer, uInt32 maxSize) const;
+    uInt32 readFile(const string& filename, uInt8* buffer, uInt32 maxSize, bool showmessage = true) const;
 
     /**
       Write data from the given buffer to the given file.
 
       @return  The number of bytes written (0 indicates error).
     */
-    uInt32 writeFile(const string& filename, uInt8* buffer, uInt32 size) const;
+    uInt32 writeFile(const string& filename, uInt8* buffer, uInt32 size, bool showmessage = true) const;
 
     /**
       Write the given sector to the serial port.
