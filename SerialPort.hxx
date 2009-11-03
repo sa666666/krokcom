@@ -88,9 +88,9 @@ class SerialPort
       determining the size of the block.
 
       @param data  The string to write to the port
-      @return  The number of bytes written (-1 indicates error)
+      @return  The number of bytes written
     */
-    uInt32 send(void* data, uInt32 size = 0)
+    uInt32 send(const void* data, uInt32 size = 0)
     {
       return sendBlock(data, size == 0 ? strlen((const char*)data) : size);
     }
