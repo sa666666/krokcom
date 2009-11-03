@@ -27,13 +27,17 @@
 void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
 {
   string bstype = "", tvformat = "", romfile = "";
+  bool incremental = false, autoverify = false;
 
   // Parse commandline args
   for(int i = 1; i < ac; ++i)
   {
     if(strstr(av[i], "-bs=") == av[i])
       bstype = av[i]+4;
-//    else if(...)         // add more options here
+    else if(!strcmp(av[i], "-id"))
+      incremental = true;
+    else if(!strcmp(av[i], "-av"))
+      autoverify = true;
     else
       romfile = av[i];
   }
@@ -56,12 +60,14 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
 
   // Create a new single-load cart
   cart.create(romfile, bstype);
+  cart.setIncremental(incremental);
 
   // Write to serial port
   if(cart.isValid())
   {
     try
     {
+      cout << endl;
       uInt16 sector = 0, numSectors = cart.initSectors(true);
       while(sector < numSectors)
       {
@@ -87,6 +93,47 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
     {
       cout << msg << endl;
     }
+
+    if(cart.finalizeSectors())
+    {
+      cout << cart.message() << endl;
+
+      // See if we should automatically verify the download
+      if(autoverify)
+      {
+        // It seems we must wait a while before attempting a verify
+        manager.port().sleepMillis(100);
+        try
+        {
+          uInt16 sector = 0, numSectors = cart.initSectors(false);
+          while(sector < numSectors)
+          {
+            uInt16 lower = cart.currentSector();
+            uInt16 upper = lower + BSPF_min(15, (int)(numSectors-sector-1));
+
+            cout << endl << "Sectors " << setw(4) << lower << " - " << setw(4) << upper << " | ";
+            for(uInt16 col = 0; col < 16; ++col)
+            {
+              if(sector < numSectors)
+              {
+                cart.verifyNextSector(manager.port());
+                ++sector;
+                cout << "." << flush;
+              }
+              else
+                cout << " " << flush;
+            }
+            cout << " | successfully verified : " << setw(3) << (100*sector/numSectors) << "% complete" << endl;
+          }
+        }
+        catch(const char* msg)
+        {
+          cout << msg << endl;
+        }
+      }
+    }
+    else
+      cout << cart.message() << endl;
   }
   else
     cout << "ERROR: Invalid cartridge, not written" << endl;
