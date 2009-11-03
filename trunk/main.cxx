@@ -26,7 +26,7 @@
 
 void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
 {
-  string bstype = "", tvformat = "", romfile = "";
+  string bstype = "", romfile = "";
   bool incremental = false, autoverify = false;
 
   // Parse commandline args
@@ -145,6 +145,7 @@ int main(int ac, char* av[])
   if(ac == 2 && !strcmp(av[1], "-help"))
   {
     cout << "Krokodile Commander for UNIX version " << KROK_VERSION << endl
+         << "  http://krokcom.sf.net" << endl
          << endl
          << "Usage: krokcom [options ...] datafile" << endl
          << "       Run without any options or datafile to use the graphical frontend" << endl
@@ -153,6 +154,8 @@ int main(int ac, char* av[])
          << "Valid options are:" << endl
          << endl
          << "  -bs=[type]  Specify the bankswitching scheme for a ROM image (default is 'auto')" << endl
+         << "  -av         Automatically verify after a download is successfully completed" << endl
+         << "  -id         Perform an incremental download (only download changes since last time)" << endl
          << "  -help       Displays the message you're now reading" << endl
          << endl
          << "This software is Copyright (c) 2009 Stephen Anthony, and is released" << endl
