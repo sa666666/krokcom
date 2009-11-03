@@ -1002,7 +1002,7 @@ void KrokComWindow::clearMCContents(int rows)
   mcartDeleteGroup->setExclusive(false);
   for(int i = 0; i < 127; ++i)
   {
-    QPushButton* ins = new QPushButton(QIcon(":icons/pics/new.png"), "");
+    QPushButton* ins = new QPushButton("...");
     ui->mcartTable->setCellWidget(i, 2, ins);
     mcartOpenGroup->addButton(ins, i);
 
