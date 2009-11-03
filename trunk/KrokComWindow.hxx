@@ -51,7 +51,7 @@ Q_OBJECT
   private:
     void setupConnections();
     void readSettings();
-    void loadROM(const QString& file);
+    void loadROM(const QString& file, bool showmessage = true);
     void assignToQPButton(QPushButton* button, int id);
     void assignToQPButton(QPushButton* button, int id, const QString& file, bool save);
     void swapMCEntry(int direction);
@@ -71,6 +71,7 @@ Q_OBJECT
     void slotOpenROM();
     void slotDownloadROM();
     void slotVerifyROM();
+    void slotEnableIncDownload(bool);
     void slotRetry(QAction*);
     void slotSetBSType(const QString&);
     void slotAbout();

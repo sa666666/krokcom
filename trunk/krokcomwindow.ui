@@ -1263,7 +1263,7 @@ the wrong type may cause the screen to roll.</string>
      <x>0</x>
      <y>0</y>
      <width>720</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1384,7 +1384,7 @@ the wrong type may cause the screen to roll.</string>
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Incremental Download</string>
