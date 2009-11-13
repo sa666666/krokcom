@@ -41,6 +41,6 @@ The KrokCom distributions can be obtained from the KrokCom Website at:
   http://krokcom.sf.net
 
 Information about the Krokodile Cartridge (and software for Windows)
-can be obtained from the authors Website:
+can be obtained from the authors website:
 
   http://www.arminvogl.de/KrokodileCartridge
