@@ -10,7 +10,7 @@
                              Release History
 ===========================================================================
 
-1.0: (November xx, 2009)
+1.0: (November 15, 2009)
 
   * Initial release for Linux/UNIX and Mac OSX.
 

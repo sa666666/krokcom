@@ -11,4 +11,4 @@ visit the KrokCom Website at:
 Enjoy,
 
 Stephen Anthony
-November xx, 2009
+November 15, 2009
