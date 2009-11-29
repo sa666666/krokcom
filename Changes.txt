@@ -10,8 +10,14 @@
                              Release History
 ===========================================================================
 
+1.1: (December 8, 2009)
+
+  * Added a menu item for crediting people responsible for helping me
+    in releasing this software.
+
+-Have fun!
+
+
 1.0: (November 15, 2009)
 
   * Initial release for Linux/UNIX and Mac OSX.
-
--Have fun!

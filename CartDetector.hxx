@@ -17,7 +17,7 @@
 #ifndef __CART_DETECTOR_HXX
 #define __CART_DETECTOR_HXX
 
-#include "bspf.hxx"
+#include "bspf_krok.hxx"
 #include "BSType.hxx"
 
 /**

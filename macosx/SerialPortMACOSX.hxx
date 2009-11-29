@@ -14,25 +14,32 @@
 // $Id$
 //============================================================================
 
-#include "bspf.hxx"
+#include "bspf_krok.hxx"
 
-#ifndef __SERIALPORT_UNIX_HXX
-#define __SERIALPORT_UNIX_HXX
+#ifndef __SERIALPORT_MACOSX_HXX
+#define __SERIALPORT_MACOSX_HXX
+
+#include	<sys/filio.h>
+#include	<sys/ioctl.h>
+#include	<CoreFoundation/CoreFoundation.h>
+#include	<IOKit/IOKitLib.h>
+#include	<IOKit/serial/IOSerialKeys.h>
+#include	<IOKit/IOBSD.h>
 
 #include <termios.h>
 
 #include "SerialPort.hxx"
 
 /**
-  Implement reading and writing from a serial port under UNIX.
+  Implement reading and writing from a serial port under MacOSX.
 
   @author  Stephen Anthony
 */
-class SerialPortUNIX : public SerialPort
+class SerialPortMACOSX : public SerialPort
 {
   public:
-    SerialPortUNIX();
-    virtual ~SerialPortUNIX();
+    SerialPortMACOSX();
+    virtual ~SerialPortMACOSX();
 
     /**
       Open the given serial port with the specified attributes.
@@ -110,6 +117,10 @@ class SerialPortUNIX : public SerialPort
       Get all valid serial ports detected on this system.
     */
     const StringList& getPortNames();
+
+  private:
+    kern_return_t createSerialIterator(io_iterator_t* serialIterator);
+    char* getRegistryString(io_object_t sObj, char* propName);
 
   private:
     // File descriptor for serial connection

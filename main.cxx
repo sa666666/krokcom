@@ -17,7 +17,7 @@
 #include <QApplication>
 #include <cstring>
 
-#include "bspf.hxx"
+#include "bspf_krok.hxx"
 #include "Cart.hxx"
 #include "SerialPort.hxx"
 #include "SerialPortManager.hxx"
