@@ -17,7 +17,7 @@
 #ifndef __SERIALPORT_HXX
 #define __SERIALPORT_HXX
 
-#include "bspf.hxx"
+#include "bspf_krok.hxx"
 
 /**
   This class provides an interface for a standard serial port.

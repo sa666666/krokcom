@@ -27,7 +27,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "bspf.hxx"
+#include "bspf_krok.hxx"
 #include "MD5.hxx"
 #include "CartDetector.hxx"
 

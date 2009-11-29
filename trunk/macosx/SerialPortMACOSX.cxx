@@ -14,42 +14,34 @@
 // $Id$
 //============================================================================
 
-#include "bspf.hxx"
+#include "bspf_krok.hxx"
 
-#if defined(__OpenBSD__)
-  #include <errno.h>
-#else
-  #include <sys/errno.h>
-#endif
-
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <cstdio>
 #include <fcntl.h>
-#include <unistd.h>
+#include <sys/errno.h>
 #include <sys/termios.h>
 #include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/param.h>
-#include <dirent.h>
+#include <sys/time.h>
+#include <unistd.h>
 #include <cstring>
 
-#include "SerialPortUNIX.hxx"
+#include "SerialPortMACOSX.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SerialPortUNIX::SerialPortUNIX()
+SerialPortMACOSX::SerialPortMACOSX()
   : SerialPort(),
     myHandle(0)
 {
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SerialPortUNIX::~SerialPortUNIX()
+SerialPortMACOSX::~SerialPortMACOSX()
 {
   closePort();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool SerialPortUNIX::openPort(const string& device)
+bool SerialPortMACOSX::openPort(const string& device)
 {
   myHandle = open(device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
   if(myHandle < 0)
@@ -65,14 +57,7 @@ bool SerialPortUNIX::openPort(const string& device)
   bzero(&myNewtio, sizeof(myNewtio));
   myNewtio.c_cflag = CS8 | CLOCAL | CREAD;
 
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-  if(cfsetspeed(&myNewtio, (speed_t)myBaud)
-  {
-    cerr << "ERROR: baudrate " << myBaud << " not supported" << endl;
-    return false;
-  }
-#else
-  #define NEWTERMIOS_SETBAUDRATE(bps) myNewtio.c_cflag |= bps;
+  #define NEWTERMIOS_SETBAUDRATE(bps) myNewtio.c_ispeed = myNewtio.c_ospeed = bps;
 
   switch (myBaud)
   {
@@ -96,7 +81,6 @@ bool SerialPortUNIX::openPort(const string& device)
       return false;
     }
   }
-#endif
 
   myNewtio.c_iflag = IGNPAR | IGNBRK | IXON | IXOFF;
   myNewtio.c_oflag = 0;
@@ -119,7 +103,7 @@ bool SerialPortUNIX::openPort(const string& device)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void SerialPortUNIX::closePort()
+void SerialPortMACOSX::closePort()
 {
   if(myHandle)
   {
@@ -133,13 +117,13 @@ void SerialPortUNIX::closePort()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool SerialPortUNIX::isOpen()
+bool SerialPortMACOSX::isOpen()
 {
   return myHandle > 0;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt32 SerialPortUNIX::receiveBlock(void* answer, uInt32 max_size)
+uInt32 SerialPortMACOSX::receiveBlock(void* answer, uInt32 max_size)
 {
   uInt32 result = 0;
   if(myHandle)
@@ -152,19 +136,19 @@ uInt32 SerialPortUNIX::receiveBlock(void* answer, uInt32 max_size)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt32 SerialPortUNIX::sendBlock(const void* data, uInt32 size)
+uInt32 SerialPortMACOSX::sendBlock(const void* data, uInt32 size)
 {
   return myHandle ? write(myHandle, data, size) : 0;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void SerialPortUNIX::setTimeout(uInt32 timeout_milliseconds)
+void SerialPortMACOSX::setTimeout(uInt32 timeout_milliseconds)
 {
   mySerialTimeoutCount = timeout_milliseconds / 100;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void SerialPortUNIX::clearBuffers()
+void SerialPortMACOSX::clearBuffers()
 {
   // Variables to store the current tty state, create a new one
   struct termios origtty, tty;
@@ -181,7 +165,7 @@ void SerialPortUNIX::clearBuffers()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void SerialPortUNIX::controlModemLines(bool DTR, bool RTS)
+void SerialPortMACOSX::controlModemLines(bool DTR, bool RTS)
 {
   // Handle whether to swap the control lines
   if(myControlLinesSwapped)
@@ -208,44 +192,69 @@ void SerialPortUNIX::controlModemLines(bool DTR, bool RTS)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void SerialPortUNIX::sleepMillis(uInt32 milliseconds)
+void SerialPortMACOSX::sleepMillis(uInt32 milliseconds)
 {
   usleep(milliseconds*1000); // convert to microseconds
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const StringList& SerialPortUNIX::getPortNames()
+const StringList& SerialPortMACOSX::getPortNames()
 {
   myPortNames.clear();
 
-  // First get all possible devices in the '/dev' directory
-  DIR* dirp = opendir("/dev");
-  if(dirp != NULL)
+  io_iterator_t theSerialIterator;
+  io_object_t theObject;
+  char dialInDevice[1024];
+  if(createSerialIterator(&theSerialIterator) == KERN_SUCCESS)
   {
-    // Search for files matching common serial port device names
-    struct dirent* dp;
-    while ((dp = readdir(dirp)) != NULL)
+    while((theObject = IOIteratorNext(theSerialIterator)) != 0)
     {
-      const char* ptr = dp->d_name;
-
-      if((strstr(ptr, "ttyS") == ptr) ||  // linux Serial Ports
-         (strstr(ptr, "ttyUSB") == ptr))  // for USB frobs
-      {
-        string device = "/dev/";
-        device += ptr;
-
-        if(openPort(device))
-        {
-          uInt8 c;
-          int n = receiveBlock(&c, 1);
-          if(n >= 0)
-            myPortNames.push_back(device);
-        }
-        closePort();
-      }
+      strcpy(dialInDevice, getRegistryString(theObject, kIODialinDeviceKey));
+      myPortNames.push_back(dialInDevice);
     }
-    closedir(dirp);
   }
 
   return myPortNames;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+kern_return_t SerialPortMACOSX::createSerialIterator(io_iterator_t* serialIterator)
+{
+  kern_return_t kernResult;
+  mach_port_t masterPort;
+  CFMutableDictionaryRef classesToMatch;
+  if((kernResult = IOMasterPort(NULL, &masterPort)) != KERN_SUCCESS)
+  {
+    cerr << "IOMasterPort returned " << kernResult << endl;
+    return kernResult;
+  }
+  if((classesToMatch = IOServiceMatching(kIOSerialBSDServiceValue)) == NULL)
+  {
+    cerr << "IOServiceMatching returned NULL\n";
+    return kernResult;
+  }
+  CFDictionarySetValue(classesToMatch, CFSTR(kIOSerialBSDTypeKey), CFSTR(kIOSerialBSDRS232Type));
+  kernResult = IOServiceGetMatchingServices(masterPort, classesToMatch, serialIterator);
+  if(kernResult != KERN_SUCCESS)
+  {
+    cerr << "IOServiceGetMatchingServices returned " << kernResult << endl;
+  }
+  return kernResult;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+char* SerialPortMACOSX::getRegistryString(io_object_t sObj, char* propName)
+{
+  static char resultStr[256];
+  CFTypeRef nameCFstring;
+  resultStr[0] = 0;
+  nameCFstring = IORegistryEntryCreateCFProperty(sObj,
+      CFStringCreateWithCString(kCFAllocatorDefault, propName, kCFStringEncodingASCII),
+      kCFAllocatorDefault, 0);
+  if(nameCFstring)
+  {
+    CFStringGetCString((CFStringRef)nameCFstring, resultStr, sizeof(resultStr), kCFStringEncodingASCII);
+    CFRelease(nameCFstring);
+  }
+  return resultStr;
 }

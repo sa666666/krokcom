@@ -19,12 +19,15 @@ HEADERS += KrokComWindow.hxx \
     FindKrokThread.hxx \
     Version.hxx \
     MultiCart.hxx \
-    MD5.hxx
+    MD5.hxx \
+    bspf_krok.hxx
 FORMS += krokcomwindow.ui
 RESOURCES += resources.qrc
 unix:!macx { 
-    SOURCES += SerialPortUNIX.cxx
-    HEADERS += SerialPortUNIX.hxx
+    INCLUDEPATH += unix
+    DEFINES += HAVE_INTTYPES
+    SOURCES += unix/SerialPortUNIX.cxx
+    HEADERS += unix/SerialPortUNIX.hxx
     TARGET = krokcom
     target.path = /usr/bin
     docs.path = /usr/share/doc/krokcom
@@ -47,13 +50,16 @@ unix:!macx {
         desktop
 }
 macx { 
-    SOURCES += SerialPortMACOSX.cxx
-    HEADERS += SerialPortMACOSX.hxx
+    INCLUDEPATH += macosx
+    DEFINES += HAVE_INTTYPES
+    SOURCES += macosx/SerialPortMACOSX.cxx
+    HEADERS += macosx/SerialPortMACOSX.hxx
     LIBS += -framework \
         CoreFoundation \
         -framework \
         IOKit
     ICON = macosx/krokcom.icns
     QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.5.sdk
-    CONFIG += x86 ppc
+    CONFIG += x86 \
+        ppc
 }
