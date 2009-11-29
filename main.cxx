@@ -24,6 +24,7 @@
 #include "KrokComWindow.hxx"
 #include "Version.hxx"
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
 {
   string bstype = "", romfile = "";
@@ -139,7 +140,7 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
     cout << "ERROR: Invalid cartridge, not written" << endl;
 }
 
-
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int main(int ac, char* av[])
 {
   if(ac == 2 && !strcmp(av[1], "-help"))

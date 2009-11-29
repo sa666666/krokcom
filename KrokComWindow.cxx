@@ -38,6 +38,7 @@
 #include <sstream>
 using namespace std;
 
+#include "AboutDialog.hxx"
 #include "KrokComWindow.hxx"
 #include "ui_krokcomwindow.h"
 #include "CartDetector.hxx"
@@ -502,21 +503,24 @@ void KrokComWindow::slotAbout()
         << "<p>Based on the original <a href=\"http://www.arminvogl.de/KrokodileCartridge\">Windows version</a><br>"
         << "Copyright &copy; 2002-2009 <a href=\"mailto:Armin.Vogl@gmx.net\">Armin Vogl</a></p>"
         << "</center>"
-        << "<p>This&nbsp;software&nbsp;is&nbsp;released&nbsp;under&nbsp;the&nbsp;GNU&nbsp;GPLv3,<br>"
-        << "and&nbsp;includes&nbsp;code&nbsp;from&nbsp;the&nbsp;following&nbsp;projects:</p>"
-        << "<p></p>"
-        << "<p>"
-        << "&nbsp;&nbsp;&nbsp;JKrokcom&nbsp;:&nbsp;Preliminary&nbsp;Java&nbsp;port&nbsp;of&nbsp;KrokCom<br>"
-        << "&nbsp;&nbsp;&nbsp;HarmonyCart&nbsp;:&nbsp;UI&nbsp;code,&nbsp;icons&nbsp;and&nbsp;other&nbsp;images<br>"
-        << "&nbsp;&nbsp;&nbsp;Stella&nbsp;:&nbsp;bankswitch&nbsp;autodetection&nbsp;code<br>"
-        << "</p>";
-  QMessageBox mb;
-  mb.setWindowTitle("Info about Krokodile Commander for UNIX");
-  mb.setWindowIcon(QPixmap(":icons/pics/appicon.png"));
-  mb.setIconPixmap(QPixmap(":icons/pics/cart.png"));
-  mb.setTextFormat(Qt::RichText);
-  mb.setText(about.str().c_str());
-  mb.exec();
+        << "<p>This software is released under the GNU GPLv3, and includes items from the following projects:</p>"
+        << "<ul>"
+        << "<li>JKrokcom: Preliminary Java port of KrokCom</li>"
+        << "<li>HarmonyCart: UI code, icons and other images</li>"
+        << "<li>Stella: bankswitch autodetection code</li>"
+        << "</ul>"
+        << "<p>Special thanks go to the following people:"
+        << "<p><ul>"
+        << "<li>Jeff Johnson: Provided extended loan of a Krokodile Cart, allowing this software to be written</li>"
+        << "<li>Joe Chiarelli: Monetary contribution in appreciation for the OSX port</li>"
+        << "<li>Darrell Spice Jr: Provided preliminary C-based commandline implementation of KrokCom</li>"
+        << "<li>Nathan Strum: Provided icon for KrokCom"
+        << "<li>Armin Vogl: Author of the Windows version of KrokCom, and designer of the UI (I basically reused the UI from KrokCom for Windows)</li>"
+        << "<li>Chris Walton: Provided preliminary Java-based commandline implementation of JKrokCom</li>"
+        << "</ul></p>";
+
+  AboutDialog aboutdlg(this, "Info about Krokodile Commander for UNIX", about.str().c_str());
+  aboutdlg.exec();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

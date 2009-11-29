@@ -8,7 +8,8 @@ SOURCES += main.cxx \
     Cart.cxx \
     CartDetector.cxx \
     SerialPortManager.cxx \
-    MD5.cxx
+    MD5.cxx \
+    AboutDialog.cxx
 HEADERS += KrokComWindow.hxx \
     bspf.hxx \
     BSType.hxx \
@@ -20,8 +21,10 @@ HEADERS += KrokComWindow.hxx \
     Version.hxx \
     MultiCart.hxx \
     MD5.hxx \
-    bspf_krok.hxx
-FORMS += krokcomwindow.ui
+    bspf_krok.hxx \
+    AboutDialog.hxx
+FORMS += krokcomwindow.ui \
+    aboutdialog.ui
 RESOURCES += resources.qrc
 unix:!macx { 
     INCLUDEPATH += unix
