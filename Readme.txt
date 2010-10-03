@@ -1,4 +1,4 @@
-This is release 1.1 of KrokCom.  KrokCom is a cross-platform application
+This is release 1.x of KrokCom.  KrokCom is a cross-platform application
 used to program the Krokodile Cartridge from a serial port/USB-serial
 converter for Linux/UNIX and OSX systems.  Both GUI and commandline
 usage is supported.
