@@ -13,7 +13,7 @@ fi
 
 VER="$1"
 DMG="KrokCom-${VER}-macosx.dmg"
-DISK="/Volumes/KrokCom"
+DISK="/Volumes/KrokComOSX"
 DEST=~/Desktop/${DMG}
 
 if [ -d "${DISK}" ]; then
@@ -35,7 +35,6 @@ ditto ../Announce.txt ../Changes.txt ../Copyright.txt ../License.txt ../Readme.t
 
 echo "Copying application ..."
 cp -r ../KrokCom.app "${DISK}"
-cp -r ../arm "${DISK}"
 
 echo "Ejecting ${DMG} ..."
 hdiutil eject "${DISK}"

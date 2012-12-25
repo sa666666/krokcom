@@ -47,8 +47,8 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
   manager.connectKrokCart();
   if(manager.krokCartAvailable())
   {
-    cout << "KrokCart: \'" << manager.versionID() << "\'"
-         << " @ \'" << manager.portName() << "\'" << endl;
+    cout << "KrokCart: \'" << manager.versionID().c_str() << "\'"
+         << " @ \'" << manager.portName().c_str() << "\'" << endl;
   }
   else
   {
@@ -97,7 +97,7 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
 
     if(cart.finalizeSectors())
     {
-      cout << cart.message() << endl;
+      cout << cart.message().c_str() << endl;
 
       // See if we should automatically verify the download
       if(autoverify)
@@ -134,7 +134,7 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
       }
     }
     else
-      cout << cart.message() << endl;
+      cout << cart.message().c_str() << endl;
   }
   else
     cout << "ERROR: Invalid cartridge, not written" << endl;

@@ -50,13 +50,13 @@ bool Cart::create(const string& filename, const string& type)
   if(myType == BS_AUTO || type == "")
   {
     myType = CartDetector::autodetectType(filename, myCart, myCartSize);
-    cout << "Bankswitch type: " << Bankswitch::typeToName(myType)
+    cout << "Bankswitch type: " << Bankswitch::typeToName(myType).c_str()
          << " (auto-detected)" << endl;
   }
   else
   {
     myType = Bankswitch::nameToType(type);
-    cout << "Bankswitch type: " << Bankswitch::typeToName(myType)
+    cout << "Bankswitch type: " << Bankswitch::typeToName(myType).c_str()
          << " (WARNING: overriding auto-detection)" << endl;
   }
   switch(myType)
@@ -74,9 +74,9 @@ bool Cart::create(const string& filename, const string& type)
     case BS_MC:
     {
       ostringstream out;
-      out << "Bankswitch mode \'" << Bankswitch::typeToName(myType) << "\' is not supported.";
+      out << "Bankswitch mode \'" << Bankswitch::typeToName(myType).c_str() << "\' is not supported.";
       myLogMessage = out.str();
-      cout << myLogMessage << endl;
+      cout << myLogMessage.c_str() << endl;
       return myIsValid = false;
     }
     default:
@@ -104,7 +104,7 @@ bool Cart::create(const string& filename, const string& type)
   else
     myLogMessage = "Invalid cartridge.";
 
-  cout << myLogMessage << endl;
+  cout << myLogMessage.c_str() << endl;
   return myIsValid;
 }
 
@@ -182,7 +182,7 @@ bool Cart::createMultiFile(const StringList& menuNames, const StringList& fileNa
     }
     else
       cout << "Multicart image " << i << " skipped; invalid bankswitch type \'"
-           << Bankswitch::typeToName(imgtype) << "\'" << endl;
+           << Bankswitch::typeToName(imgtype).c_str() << "\'" << endl;
   }
   delete[] imgbuf;
 
@@ -272,7 +272,7 @@ uInt16 Cart::initSectors(bool downloadMode)
             << (myCartSize/256) << " sectors are changed.";
         myLogMessage = out.str();
       }
-      cout << myLogMessage << endl;
+      cout << myLogMessage.c_str() << endl;
     }
   }
   else
@@ -375,7 +375,7 @@ bool Cart::finalizeSectors()
 uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize,
                       bool showmessage) const
 {
-  if(showmessage) cout << "Reading from file: \'" << filename << "\' ... ";
+  if(showmessage) cout << "Reading from file: \'" << filename.c_str() << "\' ... ";
 
   // Read file into buffer
   ifstream in(filename.c_str(), ios::binary);
@@ -399,7 +399,7 @@ uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize,
 uInt32 Cart::writeFile(const string& filename, uInt8* buffer, uInt32 size,
                        bool showmessage) const
 {
-  if(showmessage) cout << "Writing to file: \'" << filename << "\' ... ";
+  if(showmessage) cout << "Writing to file: \'" << filename.c_str() << "\' ... ";
 
   // Write to file from buffer
   ofstream out(filename.c_str(), ios::binary);
