@@ -6,7 +6,7 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009 by Stephen Anthony <stephena@users.sourceforge.net>
+// Copyright (c) 2009-2013 by Stephen Anthony <stephena@users.sf.net>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -88,7 +88,7 @@ BSType CartDetector::autodetectType(const string& filename, const uInt8* image, 
     else
       type = BS_4K;
   }
-  else if(size == 8192)  // 8K
+  else if(size == 8*1024)  // 8K
   {
     if(isProbablySC(image, size))
       type = BS_F8SC;
@@ -109,19 +109,15 @@ BSType CartDetector::autodetectType(const string& filename, const uInt8* image, 
     else
       type = BS_F8;
   }
-  else if((size == 10495) || (size == 10496) || (size == 10240))  // 10K - Pitfall2
+  else if(size >= 10240 && size <= 10496)  // ~10K - Pitfall2
   {
     type = BS_DPC;
   }
-  else if(size == 12288)  // 12K
+  else if(size == 12*1024)  // 12K
   {
-    // TODO - this should really be in a method that checks the first
-    // 512 bytes of ROM and finds if either the lower 256 bytes or
-    // higher 256 bytes are all the same.  For now, we assume that
-    // all carts of 12K are CBS RAM Plus/FASC.
     type = BS_FA;
   }
-  else if(size == 16384)  // 16K
+  else if(size == 16*1024)  // 16K
   {
     if(isProbablySC(image, size))
       type = BS_F6SC;
@@ -134,7 +130,11 @@ BSType CartDetector::autodetectType(const string& filename, const uInt8* image, 
     else
       type = BS_F6;
   }
-  else if(size == 32768)  // 32K
+  else if(size == 29*1024)  // 29K
+  {
+    type = BS_DPCP;
+  }
+  else if(size == 32*1024)  // 32K
   {
     if(isProbablySC(image, size))
       type = BS_F4SC;
@@ -142,10 +142,12 @@ BSType CartDetector::autodetectType(const string& filename, const uInt8* image, 
       type = BS_3E;
     else if(isProbably3F(image, size))
       type = BS_3F;
+    else if(isProbablyDPCplus(image, size))
+      type = BS_DPCP;
     else
       type = BS_F4;
   }
-  else if(size == 65536)  // 64K
+  else if(size == 64*1024)  // 64K
   {
     if(isProbably3E(image, size))
       type = BS_3E;
@@ -285,6 +287,40 @@ bool CartDetector::isProbablySC(const uInt8* image, uInt32 size)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbably0840(const uInt8* image, uInt32 size)
+{
+  // 0840 cart bankswitching is triggered by accessing addresses 0x0800
+  // or 0x0840
+  uInt8 signature1[2][3] = {
+    { 0xAD, 0x00, 0x08 },  // LDA $0800
+    { 0xAD, 0x40, 0x08 }   // LDA $0840
+  };
+  for(uInt32 i = 0; i < 2; ++i)
+    if(searchForBytes(image, size, signature1[i], 3, 1))
+      return true;
+
+  uInt8 signature2[2][4] = {
+    { 0x0C, 0x00, 0x08, 0x4C },  // NOP $0800; JMP ...
+    { 0x0C, 0xFF, 0x0F, 0x4C }   // NOP $0FFF; JMP ...
+  };
+  for(uInt32 i = 0; i < 2; ++i)
+    if(searchForBytes(image, size, signature2[i], 4, 1))
+      return true;
+
+  return false;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbably3E(const uInt8* image, uInt32 size)
+{
+  // 3E cart bankswitching is triggered by storing the bank number
+  // in address 3E using 'STA $3E', commonly followed by an
+  // immediate mode LDA
+  uInt8 signature[] = { 0x85, 0x3E, 0xA9, 0x00 };  // STA $3E; LDA #$00
+  return searchForBytes(image, size, signature, 4, 1);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool CartDetector::isProbably3F(const uInt8* image, uInt32 size)
 {
   // 3F cart bankswitching is triggered by storing the bank number
@@ -296,13 +332,44 @@ bool CartDetector::isProbably3F(const uInt8* image, uInt32 size)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool CartDetector::isProbably3E(const uInt8* image, uInt32 size)
+bool CartDetector::isProbably4A50(const uInt8* image, uInt32 size)
 {
-  // 3E cart bankswitching is triggered by storing the bank number
-  // in address 3E using 'STA $3E', commonly followed by an
-  // immediate mode LDA
-  uInt8 signature[] = { 0x85, 0x3E, 0xA9, 0x00 };  // STA $3E; LDA #$00
-  return searchForBytes(image, size, signature, 4, 1);
+  // 4A50 carts store address $4A50 at the NMI vector, which
+  // in this scheme is always in the last page of ROM at
+  // $1FFA - $1FFB (at least this is true in rev 1 of the format)
+  if(image[size-6] == 0x50 && image[size-5] == 0x4A)
+    return true;
+
+  // Program starts at $1Fxx with NOP $6Exx or NOP $6Fxx?
+  if(((image[0xfffd] & 0x1f) == 0x1f) &&
+      (image[image[0xfffd] * 256 + image[0xfffc]] == 0x0c) &&
+      ((image[image[0xfffd] * 256 + image[0xfffc] + 2] & 0xfe) == 0x6e))
+    return true;
+
+  return false;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablyCV(const uInt8* image, uInt32 size)
+{
+  // CV RAM access occurs at addresses $f3ff and $f400
+  // These signatures are attributed to the MESS project
+  uInt8 signature[2][3] = {
+    { 0x9D, 0xFF, 0xF3 },  // STA $F3FF.X
+    { 0x99, 0x00, 0xF4 }   // STA $F400.Y
+  };
+  if(searchForBytes(image, size, signature[0], 3, 1))
+    return true;
+  else
+    return searchForBytes(image, size, signature[1], 3, 1);
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablyDPCplus(const uInt8* image, uInt32 size)
+{
+  // DPC+ ARM code has 2 occurrences of the string DPC+
+  uInt8 signature[] = { 0x44, 0x50, 0x43, 0x2B };  // DPC+
+  return searchForBytes(image, size, signature, 4, 2);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -340,14 +407,16 @@ bool CartDetector::isProbablyE7(const uInt8* image, uInt32 size)
   // search for only certain known signatures
   // Thanks to "stella@casperkitty.com" for this advice
   // These signatures are attributed to the MESS project
-  uInt8 signature[5][3] = {
+  uInt8 signature[7][3] = {
+   { 0xAD, 0xE2, 0xFF },  // LDA $FFE2
    { 0xAD, 0xE5, 0xFF },  // LDA $FFE5
    { 0xAD, 0xE5, 0x1F },  // LDA $1FE5
+   { 0xAD, 0xE7, 0x1F },  // LDA $1FE7
    { 0x0C, 0xE7, 0x1F },  // NOP $1FE7
    { 0x8D, 0xE7, 0xFF },  // STA $FFE7
    { 0x8D, 0xE7, 0x1F }   // STA $1FE7
   };
-  for(uInt32 i = 0; i < 5; ++i)
+  for(uInt32 i = 0; i < 7; ++i)
     if(searchForBytes(image, size, signature[i], 3, 1))
       return true;
 
@@ -360,9 +429,45 @@ bool CartDetector::isProbablyEF(const uInt8* image, uInt32 size)
   // EF cart bankswitching switches banks by accessing addresses 0xFE0
   // to 0xFEF, usually with either a NOP or LDA
   // It's likely that the code will switch to bank 0, so that's what is tested
-  uInt8 signature[2][3] = {
+  uInt8 signature[4][3] = {
     { 0x0C, 0xE0, 0xFF },  // NOP $FFE0
-    { 0xAD, 0xE0, 0xFF }   // LDA $FFE0
+    { 0xAD, 0xE0, 0xFF },  // LDA $FFE0
+    { 0x0C, 0xE0, 0x1F },  // NOP $1FE0
+    { 0xAD, 0xE0, 0x1F }   // LDA $1FE0
+  };
+  for(uInt32 i = 0; i < 4; ++i)
+    if(searchForBytes(image, size, signature[i], 3, 1))
+      return true;
+
+  return false;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablyFE(const uInt8* image, uInt32 size)
+{
+  // FE bankswitching is very weird, but always seems to include a
+  // 'JSR $xxxx'
+  // These signatures are attributed to the MESS project
+  uInt8 signature[4][5] = {
+    { 0x20, 0x00, 0xD0, 0xC6, 0xC5 },  // JSR $D000; DEC $C5
+    { 0x20, 0xC3, 0xF8, 0xA5, 0x82 },  // JSR $F8C3; LDA $82
+    { 0xD0, 0xFB, 0x20, 0x73, 0xFE },  // BNE $FB; JSR $FE73
+    { 0x20, 0x00, 0xF0, 0x84, 0xD6 }   // JSR $F000; STY $D6
+  };
+  for(uInt32 i = 0; i < 4; ++i)
+    if(searchForBytes(image, size, signature[i], 5, 1))
+      return true;
+
+  return false;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablySB(const uInt8* image, uInt32 size)
+{
+  // SB cart bankswitching switches banks by accessing address 0x0800
+  uInt8 signature[2][3] = {
+    { 0xBD, 0x00, 0x08 },  // LDA $0800,x
+    { 0xAD, 0x00, 0x08 }   // LDA $0800
   };
   if(searchForBytes(image, size, signature[0], 3, 1))
     return true;
@@ -382,88 +487,6 @@ bool CartDetector::isProbablyUA(const uInt8* image, uInt32 size)
   };
   for(uInt32 i = 0; i < 3; ++i)
     if(searchForBytes(image, size, signature[i], 3, 1))
-      return true;
-
-  return false;
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool CartDetector::isProbably4A50(const uInt8* image, uInt32 size)
-{
-  // 4A50 carts store address $4A50 at the NMI vector, which
-  // in this scheme is always in the last page of ROM at
-  // $1FFA - $1FFB (at least this is true in rev 1 of the format)
-  int idx = size - 6;  // $1FFA
-  return (image[idx] == 0x50 && image[idx+1] == 0x4A);
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool CartDetector::isProbablySB(const uInt8* image, uInt32 size)
-{
-  // SB cart bankswitching switches banks by accessing address 0x0800
-  uInt8 signature[2][3] = {
-    { 0xBD, 0x00, 0x08 },  // LDA $0800,x
-    { 0xAD, 0x00, 0x08 }   // LDA $0800
-  };
-  if(searchForBytes(image, size, signature[0], 3, 1))
-    return true;
-  else
-    return searchForBytes(image, size, signature[1], 3, 1);
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool CartDetector::isProbably0840(const uInt8* image, uInt32 size)
-{
-  // 0840 cart bankswitching is triggered by accessing addresses 0x0800
-  // or 0x0840
-  uInt8 signature1[2][3] = {
-    { 0xAD, 0x00, 0x08 },  // LDA $0800
-    { 0xAD, 0x40, 0x08 }   // LDA $0840
-  };
-  for(uInt32 i = 0; i < 2; ++i)
-    if(searchForBytes(image, size, signature1[i], 3, 1))
-      return true;
-
-  uInt8 signature2[2][4] = {
-    { 0x0C, 0x00, 0x08, 0x4C },  // NOP $0800; JMP ...
-    { 0x0C, 0xFF, 0x0F, 0x4C }   // NOP $0FFF; JMP ...
-  };
-  for(uInt32 i = 0; i < 2; ++i)
-    if(searchForBytes(image, size, signature2[i], 4, 1))
-      return true;
-
-  return false;
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool CartDetector::isProbablyCV(const uInt8* image, uInt32 size)
-{
-  // CV RAM access occurs at addresses $f3ff and $f400
-  // These signatures are attributed to the MESS project
-  uInt8 signature[2][3] = {
-    { 0x9D, 0xFF, 0xF3 },  // STA $F3FF
-    { 0x99, 0x00, 0xF4 }   // STA $F400
-  };
-  if(searchForBytes(image, size, signature[0], 3, 1))
-    return true;
-  else
-    return searchForBytes(image, size, signature[1], 3, 1);
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool CartDetector::isProbablyFE(const uInt8* image, uInt32 size)
-{
-  // FE bankswitching is very weird, but always seems to include a
-  // 'JSR $xxxx'
-  // These signatures are attributed to the MESS project
-  uInt8 signature[4][5] = {
-    { 0x20, 0x00, 0xD0, 0xC6, 0xC5 },  // JSR $D000; DEC $C5
-    { 0x20, 0xC3, 0xF8, 0xA5, 0x82 },  // JSR $F8C3; LDA $82
-    { 0xD0, 0xFB, 0x20, 0x73, 0xFE },  // BNE $FB; JSR $FE73
-    { 0x20, 0x00, 0xF0, 0x84, 0xD6 }   // JSR $F000; STY $D6
-  };
-  for(uInt32 i = 0; i < 4; ++i)
-    if(searchForBytes(image, size, signature[i], 5, 1))
       return true;
 
   return false;

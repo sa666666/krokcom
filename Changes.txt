@@ -10,6 +10,16 @@
                              Release History
 ===========================================================================
 
+1.2: (December 25, 2012)
+
+  * Fixed bugs in user interface (cut off text, progress bar not always
+    appearing, etc).
+
+  * Updated bankswitch autodetection code to latest from Stella 3.7.5.
+
+-Have fun!
+
+
 1.1: (December 6, 2009)
 
   * Added a menu item for crediting people responsible for helping me
@@ -17,8 +27,6 @@
 
   * Native support for OSX Snow Leopard by including Qt 4.6 (the first
     version to actually support OSX 10.6).
-
--Have fun!
 
 
 1.0: (November 15, 2009)

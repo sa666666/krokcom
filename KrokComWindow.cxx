@@ -6,7 +6,7 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009 by Stephen Anthony <stephena@users.sourceforge.net>
+// Copyright (c) 2009-2013 by Stephen Anthony <stephena@users.sf.net>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -150,7 +150,6 @@ void KrokComWindow::setupConnections()
   connect(ui->downloadButton, SIGNAL(clicked()), this, SLOT(slotDownloadROM()));
   connect(ui->verifyButton, SIGNAL(clicked()), this, SLOT(slotVerifyROM()));
   connect(ui->romBSType, SIGNAL(activated(const QString&)), this, SLOT(slotSetBSType(const QString&)));
-  connect(ui->incDownloadCheckBox, SIGNAL(clicked(bool)), this, SLOT(slotEnableIncDownload(bool)));
 
   // Quick-select buttons
   myQPGroup = new QButtonGroup(this);
@@ -204,7 +203,6 @@ void KrokComWindow::readSettings()
     myCart.setRetry(retrycount);
     bool incremental = s.value("incremental", false).toBool();
     ui->actIncDownload->setChecked(incremental);
-    ui->incDownloadCheckBox->setChecked(incremental);
     myCart.setIncremental(incremental);
     ui->actAutoDownFileSelect->setChecked(s.value("autodownload", false).toBool());
     ui->actAutoVerifyDownload->setChecked(s.value("autoverify", false).toBool());
@@ -373,6 +371,7 @@ void KrokComWindow::slotDownloadROM()
   progress.setWindowIcon(QPixmap(":icons/pics/appicon.png"));
   progress.setWindowModality(Qt::WindowModal);
   progress.setMinimumDuration(0);
+  progress.setValue(0);
   try
   {
     for(sector = 0; sector < numSectors; ++sector)
@@ -431,6 +430,7 @@ void KrokComWindow::slotVerifyROM()
   progress.setWindowIcon(QPixmap(":icons/pics/appicon.png"));
   progress.setWindowModality(Qt::WindowModal);
   progress.setMinimumDuration(0);
+  progress.setValue(0);
   try
   {
     for(sector = 0; sector < numSectors; ++sector)
@@ -459,7 +459,6 @@ void KrokComWindow::slotVerifyROM()
 void KrokComWindow::slotEnableIncDownload(bool enable)
 {
   ui->actIncDownload->setChecked(enable);
-  ui->incDownloadCheckBox->setChecked(enable);
   myCart.setIncremental(enable);
 }
 
@@ -498,7 +497,7 @@ void KrokComWindow::slotAbout()
   ostringstream about;
   about << "<center>"
         << "<p><b>Krokodile Commander for UNIX v" << KROK_VERSION << "</b></p>"
-        << "<p>Copyright &copy; 2009 <a href=\"mailto:stephena@users.sf.net\">Stephen Anthony</a><br>"
+        << "<p>Copyright &copy; 2009-2013 <a href=\"mailto:stephena@users.sf.net\">Stephen Anthony</a><br>"
         << "Check for updates at <a href=\"http://krokcom.sf.net\">http://krokcom.sf.net</a><p>"
         << "<p>Based on the original <a href=\"http://www.arminvogl.de/KrokodileCartridge\">Windows version</a><br>"
         << "Copyright &copy; 2002-2009 <a href=\"mailto:Armin.Vogl@gmx.net\">Armin Vogl</a></p>"
@@ -506,8 +505,8 @@ void KrokComWindow::slotAbout()
         << "<p>This software is released under the GNU GPLv3, and includes items from the following projects:</p>"
         << "<ul>"
         << "<li>JKrokcom: Preliminary Java port of KrokCom</li>"
-        << "<li>HarmonyCart: UI code, icons and other images</li>"
-        << "<li>Stella: bankswitch autodetection code</li>"
+        << "<li><a href=\"http://harmony.atariage.com\">HarmonyCart</a>: UI code, icons and other images</li>"
+        << "<li><a href=\"http://stella.sf.net\">Stella</a>: bankswitch autodetection code</li>"
         << "</ul>"
         << "<p>Special thanks go to the following people:"
         << "<p><ul>"
@@ -517,7 +516,24 @@ void KrokComWindow::slotAbout()
         << "<li>Nathan Strum: Provided icon for KrokCom"
         << "<li>Armin Vogl: Author of the Windows version of KrokCom, and designer of the UI (I basically reused the UI from KrokCom for Windows)</li>"
         << "<li>Chris Walton: Provided preliminary Java-based commandline implementation of JKrokCom</li>"
-        << "</ul></p>";
+        << "</ul></p>"
+        << "<p>Version 1.2 (Dec. 25, 2012):</p>"
+        << "<ul>"
+        << "<li>Fixed bugs in user interface (cut off text, progress bar not always appearing, etc).</li>"
+        << "<li>Updated bankswitch autodetection code to latest from Stella 3.7.5.</li>"
+        << "</ul>"
+        << "<p>Version 1.1 (Dec. 6, 2009):</p>"
+        << "<ul>"
+        << "<li>Added a menu item for crediting people responsible for helping me "
+        << "in releasing this software.</li>"
+        << "<li>Native support for OSX Snow Leopard by including Qt 4.6 (the first "
+        << "version to actually support OSX 10.6).</li>"
+        << "</ul>"
+        << "<p>Version 1.0 (Nov. 15, 2009):</p>"
+        << "<ul>"
+        << "<li>Initial release for Linux/UNIX and Mac OSX.</li>"
+        << "</ul>"
+        ;
 
   AboutDialog aboutdlg(this, "Info about Krokodile Commander for UNIX", about.str().c_str());
   aboutdlg.exec();

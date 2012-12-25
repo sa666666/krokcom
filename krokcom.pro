@@ -28,7 +28,7 @@ FORMS += krokcomwindow.ui \
 RESOURCES += resources.qrc
 unix:!macx { 
     INCLUDEPATH += unix
-    DEFINES += HAVE_INTTYPES
+    DEFINES += HAVE_INTTYPES BSPF_UNIX
     SOURCES += unix/SerialPortUNIX.cxx
     HEADERS += unix/SerialPortUNIX.hxx
     TARGET = krokcom
@@ -40,8 +40,6 @@ unix:!macx {
         Copyright.txt \
         License.txt \
         Readme.txt
-    arm.path = /usr/share/krokcom
-    arm.files = arm/*
     desktop.path = /usr/share/applications
     desktop.files = unix/krokcom.desktop
     icon.path = /usr/share/icons
@@ -49,20 +47,13 @@ unix:!macx {
     INSTALLS += target \
         icon \
         docs \
-        arm \
         desktop
 }
 macx { 
     INCLUDEPATH += macosx
-    DEFINES += HAVE_INTTYPES
+    DEFINES += HAVE_INTTYPES BSPF_MAC_OSX
     SOURCES += macosx/SerialPortMACOSX.cxx
     HEADERS += macosx/SerialPortMACOSX.hxx
-    LIBS += -framework \
-        CoreFoundation \
-        -framework \
-        IOKit
+    LIBS += -framework CoreFoundation -framework IOKit
     ICON = macosx/krokcom.icns
-    QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.5.sdk
-    CONFIG += x86 \
-        ppc
 }
