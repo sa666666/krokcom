@@ -6,7 +6,7 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009 by Stephen Anthony <stephena@users.sourceforge.net>
+// Copyright (c) 2009-2013 by Stephen Anthony <stephena@users.sf.net>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -57,6 +57,7 @@ enum BSType
   BS_X07  = 102,
   BS_SB   = 103,
   BS_MC   = 104,
+  BS_DPCP = 105,
 
   BS_NONE = 1000,
   BS_AUTO = 1001,
@@ -93,11 +94,13 @@ class Bankswitch
         case BS_AR:   return "AR";
         case BS_EFSC: return "EFSC";
         case BS_0840: return "0840";
+
         case BS_DPC:  return "DPC";
         case BS_4A50: return "4A50";
         case BS_X07:  return "X07";
         case BS_SB:   return "SB";
         case BS_MC:   return "MC";
+        case BS_DPCP: return "DPC+";
         case BS_NONE: return "NONE/UNKNOWN";
         case BS_AUTO: return "AUTO";
       }
@@ -106,39 +109,39 @@ class Bankswitch
 
     static BSType nameToType(const string& name)
     {
-      string s = BSPF_tolower(name);
+      if(BSPF_equalsIgnoreCase(name, "4K"))         return BS_4K;
+      else if(BSPF_equalsIgnoreCase(name, "F8"))    return BS_F8;
+      else if(BSPF_equalsIgnoreCase(name, "F6"))    return BS_F6;
+      else if(BSPF_equalsIgnoreCase(name, "F4"))    return BS_F4;
+      else if(BSPF_equalsIgnoreCase(name, "MCF6"))  return BS_MCF6;
+      else if(BSPF_equalsIgnoreCase(name, "FA"))    return BS_FA;
+      else if(BSPF_equalsIgnoreCase(name, "3F"))    return BS_3F;
+      else if(BSPF_equalsIgnoreCase(name, "MCF8"))  return BS_MCF8;
+      else if(BSPF_equalsIgnoreCase(name, "F8SC"))  return BS_F8SC;
+      else if(BSPF_equalsIgnoreCase(name, "F6SC"))  return BS_F6SC;
+      else if(BSPF_equalsIgnoreCase(name, "F4SC"))  return BS_F4SC;
+      else if(BSPF_equalsIgnoreCase(name, "MCF4"))  return BS_MCF4;
+      else if(BSPF_equalsIgnoreCase(name, "MC4K"))  return BS_MC4K;
+      else if(BSPF_equalsIgnoreCase(name, "EF"))    return BS_EF;
+      else if(BSPF_equalsIgnoreCase(name, "CV"))    return BS_CV;
+      else if(BSPF_equalsIgnoreCase(name, "3E"))    return BS_3E;
+      else if(BSPF_equalsIgnoreCase(name, "UA"))    return BS_UA;
+      else if(BSPF_equalsIgnoreCase(name, "F0"))    return BS_F0;
+      else if(BSPF_equalsIgnoreCase(name, "E0"))    return BS_E0;
+      else if(BSPF_equalsIgnoreCase(name, "E7"))    return BS_E7;
+      else if(BSPF_equalsIgnoreCase(name, "FE"))    return BS_FE;
+      else if(BSPF_equalsIgnoreCase(name, "AR"))    return BS_AR;
+      else if(BSPF_equalsIgnoreCase(name, "EFSC"))  return BS_EFSC;
+      else if(BSPF_equalsIgnoreCase(name, "0840"))  return BS_0840;
 
-      if(s == "4k") 	      return BS_4K;
-      else if(s == "f8")    return  BS_F8;
-      else if(s == "f6")    return  BS_F6;
-      else if(s == "f4")    return  BS_F4;
-      else if(s == "mcf6")  return  BS_MCF6;
-      else if(s == "fa")    return  BS_FA;
-      else if(s == "3f")    return  BS_3F;
-      else if(s == "mcf8")  return  BS_MCF8;
-      else if(s == "f8sc")  return  BS_F8SC;
-      else if(s == "f6sc")  return  BS_F6SC;
-      else if(s == "f4sc")  return  BS_F4SC;
-      else if(s == "mcf4")  return  BS_MCF4;
-      else if(s == "mc4k")  return  BS_MC4K;
-      else if(s == "ef")    return  BS_EF;
-      else if(s == "cv")    return  BS_CV;
-      else if(s == "3e")    return  BS_3E;
-      else if(s == "ua")    return  BS_UA;
-      else if(s == "f0")    return  BS_F0;
-      else if(s == "e0")    return  BS_E0;
-      else if(s == "e7")    return  BS_E7;
-      else if(s == "fe")    return  BS_FE;
-      else if(s == "ar")    return  BS_AR;
-      else if(s == "efsc")  return  BS_EFSC;
-      else if(s == "0840")  return  BS_0840;
-      else if(s == "dpc")   return  BS_DPC;
-      else if(s == "4a50")  return  BS_4A50;
-      else if(s == "x07")   return  BS_X07;
-      else if(s == "sb")    return  BS_SB;
-      else if(s == "mc")    return  BS_MC;
-      else if(s == "auto")  return  BS_AUTO;
-      else                  return  BS_NONE;
+      else if(BSPF_equalsIgnoreCase(name, "DPC"))   return BS_DPC;
+      else if(BSPF_equalsIgnoreCase(name, "4A50"))  return BS_4A50;
+      else if(BSPF_equalsIgnoreCase(name, "X07"))   return BS_X07;
+      else if(BSPF_equalsIgnoreCase(name, "SB"))    return BS_SB;
+      else if(BSPF_equalsIgnoreCase(name, "MC"))    return BS_MC;
+      else if(BSPF_equalsIgnoreCase(name, "DPC+"))  return BS_DPCP;
+      else if(BSPF_equalsIgnoreCase(name, "AUTO"))  return BS_AUTO;
+      else                                          return BS_NONE;
     }
 };
 

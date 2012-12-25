@@ -6,7 +6,7 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009 by Stephen Anthony <stephena@users.sourceforge.net>
+// Copyright (c) 2009-2013 by Stephen Anthony <stephena@users.sf.net>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -67,6 +67,7 @@ bool Cart::create(const string& filename, const string& type)
     case BS_AR:
     case BS_NONE:
     case BS_DPC:
+    case BS_DPCP:
     case BS_4A50:
     case BS_X07:
     case BS_SB:

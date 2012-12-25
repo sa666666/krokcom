@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 #
-# Creates a KrokComOSX disk image (dmg) from the command line.
+# Creates a KrokCom disk image (dmg) from the command line.
 # usage:
 #    Create_build.sh <version>
 #
-# The result will be a file called ~/Desktop/KrokComOSX<ver>.dmg
+# The result will be a file called ~/Desktop/KrokCom-<ver>-macosx.dmg
 
 if [ $# != 1 ]; then
 	echo "usage: Create_build.sh version"
@@ -12,27 +12,39 @@ if [ $# != 1 ]; then
 fi
 
 VER="$1"
-DMG="KrokComOSX${VER}.dmg"
-DISK="/Volumes/KrokComOSX"
+DMG="KrokCom-${VER}-macosx.dmg"
+DISK="/Volumes/KrokCom"
+DEST=~/Desktop/${DMG}
+
+if [ -d "${DISK}" ]; then
+    echo "Volume already mounted, unmount before proceeding ..."
+    exit 0
+fi
 
 echo "Creating ${DMG} file ..."
-gunzip -c template.dmg.gz > ${DMG}
+gunzip -c template.dmg.gz > "${DMG}"
 
 echo "Mounting ${DMG} file ..."
-hdiutil attach ${DMG}
+hdiutil attach "${DMG}"
 
 echo "Adding Qt framework ..."
-macdeployqt ../KrokCom.app/ -no-plugins
+macdeployqt ../KrokCom.app/
 
 echo "Copying documentation ..."
-ditto ../Announce.txt ../Changes.txt ../Copyright.txt ../License.txt ../Readme.txt ${DISK}
+ditto ../Announce.txt ../Changes.txt ../Copyright.txt ../License.txt ../Readme.txt "${DISK}"
 
 echo "Copying application ..."
-cp -r ../KrokCom.app ${DISK}
+cp -r ../KrokCom.app "${DISK}"
+cp -r ../arm "${DISK}"
 
 echo "Ejecting ${DMG} ..."
-hdiutil eject ${DISK}
+hdiutil eject "${DISK}"
+
+if [ -f "${DEST}" ]; then
+	echo "Removing duplicate image found on desktop ..."
+    rm -f "${DEST}"
+fi
 
 echo "Compressing image, moving to Desktop ..."
-hdiutil convert ${DMG} -format UDZO -imagekey zlib-level=9 -o ~/Desktop/${DMG}
-rm -f ${DMG}
+hdiutil convert "${DMG}" -format UDZO -imagekey zlib-level=9 -o "${DEST}"
+rm -f "${DMG}"

@@ -6,7 +6,7 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009 by Stephen Anthony <stephena@users.sourceforge.net>
+// Copyright (c) 2009-2013 by Stephen Anthony <stephena@users.sf.net>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -159,7 +159,7 @@ int main(int ac, char* av[])
          << "  -id         Perform an incremental download (only download changes since last time)" << endl
          << "  -help       Displays the message you're now reading" << endl
          << endl
-         << "This software is Copyright (c) 2009 Stephen Anthony, and is released" << endl
+         << "This software is Copyright (c) 2009-2013 Stephen Anthony, and is released" << endl
          << "under the GNU GPL version 3." << endl
          << endl;
     return 0;

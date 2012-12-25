@@ -2,37 +2,11 @@
 <ui version="4.0">
  <class>KrokComWindow</class>
  <widget class="QMainWindow" name="KrokComWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>720</width>
-    <height>440</height>
-   </rect>
-  </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>720</width>
-    <height>440</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>720</width>
-    <height>440</height>
-   </size>
-  </property>
-  <property name="baseSize">
-   <size>
-    <width>720</width>
-    <height>440</height>
-   </size>
   </property>
   <property name="windowTitle">
    <string>Krokodile Commander for UNIX</string>
@@ -45,8 +19,8 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
+    <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="minimumSize">
        <size>
@@ -61,7 +35,7 @@
        <attribute name="title">
         <string>ROM</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
@@ -88,12 +62,6 @@
           </item>
           <item>
            <widget class="QLabel" name="label_2">
-            <property name="minimumSize">
-             <size>
-              <width>600</width>
-              <height>0</height>
-             </size>
-            </property>
             <property name="text">
              <string>Select ROM file and bankswitching type, the click on the Download button to send the ROM to the Krokodile Cartridge.</string>
             </property>
@@ -110,311 +78,284 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLabel" name="label_3">
-            <property name="minimumSize">
-             <size>
-              <width>60</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>60</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>ROM File </string>
-            </property>
-           </widget>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>ROM File:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>ROM Size:</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QLineEdit" name="romFileEdit">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>592</width>
-              <height>29</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Copy and paste a single-load ROM image.</string>
-            </property>
-            <property name="readOnly">
-             <bool>false</bool>
-            </property>
-            <property name="tabChangesFocus" stdset="0">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="openRomButton">
-            <property name="toolTip">
-             <string>Select a single-load ROM image.</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QLabel" name="label_4">
-            <property name="minimumSize">
-             <size>
-              <width>60</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>60</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>ROM Size</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="romSizeLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>120</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Size of the chosen ROM image.</string>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::Panel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Sunken</enum>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_6">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Bankswitching</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="romBSType">
-            <property name="minimumSize">
-             <size>
-              <width>200</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Override the bankswitching scheme
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="0">
+               <widget class="QLineEdit" name="romFileEdit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Copy and paste a single-load ROM image.</string>
+                </property>
+                <property name="readOnly">
+                 <bool>false</bool>
+                </property>
+                <property name="tabChangesFocus" stdset="0">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QPushButton" name="openRomButton">
+                <property name="toolTip">
+                 <string>Select a single-load ROM image.</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="0" column="1">
+               <widget class="QLabel" name="label_6">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Bankswitching</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="romSizeLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>120</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>Size of the chosen ROM image.</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::Panel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Sunken</enum>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QComboBox" name="romBSType">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>250</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>Override the bankswitching scheme
 for the currently selected ROM image.
 Schemes marked with (*) are not currently
 supported by the Krok Cart.</string>
-            </property>
-            <item>
-             <property name="text">
-              <string>None (Unknown)</string>
-             </property>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>None (Unknown)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>0840 (8K ECONObank)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>3E (32K Tigervision)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>3F (512K Tigervision)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>4A50* (64K 4A50 + ram)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>4K (4K Atari)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>AR* (Supercharger)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>CV (Commvid + RAM)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>DPC* (Pitfall II)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>DPC+* (extended Pitfall II)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>E0* (8K Parker Bros)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>E7 (16K M-network)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>EF (H. Runner)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>EFSC (H. Runner + RAM)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>F0* (Dynacom Megaboy)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>F4 (32K Atari)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>F4SC (32K Atari + RAM)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>F6 (16K Atari)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>F6SC (16K Atari + RAM)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>F8 (8K Atari)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>F8SC (8K Atari + RAM)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>FA (CBS RAM Plus)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>FE* (8K Decathlon)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>MC* (C. Wilkson Megacart)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>SB* (128-256K SUPERbank)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>UA (8K UA Ltd.)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>X07* (64K AtariAge)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>MC4K Multicart (8K - 512K)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>MCF8 Multicart (16K - 512K)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>MCF6 Multicart (32K - 512K)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>MCF4 Multicart (64K - 512K)</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
             </item>
-            <item>
-             <property name="text">
-              <string>0840 (8K ECONObank)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>3E (32K Tigervision)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>3F (512K Tigervision)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>4A50* (64K 4A50 + ram)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>4K (4K Atari)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>AR* (Supercharger)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>CV (Commvid + RAM)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>DPC* (Pitfall II)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>E0* (8K Parker Bros)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>E7 (16K M-network)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>EF (H. Runner)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>EFSC (H. Runner + RAM)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F0* (Dynacom Megaboy)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F4 (32K Atari)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F4SC (32K Atari + RAM)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F6 (16K Atari)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F6SC (16K Atari + RAM)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F8 (8K Atari)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F8SC (8K Atari + RAM)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>FA (CBS RAM Plus)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>FE* (8K Decathlon)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MC* (C. Wilkson Megacart)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>SB* (128-256K SUPERbank)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>UA (8K UA Ltd.)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>X07* (64K AtariAge)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MC4K Multicart (8K - 512K)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MCF8 Multicart (16K - 512K)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MCF6 Multicart (32K - 512K)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>MCF4 Multicart (64K - 512K)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="incDownloadCheckBox">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="toolTip">
-             <string>Only download the differences from the
-current cartridge content.</string>
-            </property>
-            <property name="text">
-             <string>Incremental Download</string>
-            </property>
-           </widget>
+           </layout>
           </item>
          </layout>
         </item>
@@ -779,12 +720,6 @@ for the multicart.</string>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>592</width>
-              <height>29</height>
-             </size>
-            </property>
             <property name="toolTip">
              <string>An info file is used to store your
 entries on this page.</string>
@@ -801,12 +736,6 @@ entries on this page.</string>
            <widget class="QPushButton" name="mcartinfoOpenButton">
             <property name="enabled">
              <bool>true</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>16777215</height>
-             </size>
             </property>
             <property name="toolTip">
              <string>Select a multicart info file.</string>
@@ -1258,14 +1187,6 @@ the wrong type may cause the screen to roll.</string>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>720</width>
-     <height>22</height>
-    </rect>
-   </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
@@ -1319,12 +1240,6 @@ the wrong type may cause the screen to roll.</string>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
-   <property name="font">
-    <font>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
    </property>
