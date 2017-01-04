@@ -6,12 +6,10 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009-2013 by Stephen Anthony <stephena@users.sf.net>
+// Copyright (c) 2009-2017 by Stephen Anthony <sa666666@gmail.com>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
-//
-// $Id$
 //============================================================================
 
 #include <QFileDialog>
@@ -497,7 +495,7 @@ void KrokComWindow::slotAbout()
   ostringstream about;
   about << "<center>"
         << "<p><b>Krokodile Commander for UNIX v" << KROK_VERSION << "</b></p>"
-        << "<p>Copyright &copy; 2009-2013 <a href=\"mailto:stephena@users.sf.net\">Stephen Anthony</a><br>"
+        << "<p>Copyright &copy; 2009-2017 <a href=\"mailto:sa666666@gmail.com\">Stephen Anthony</a><br>"
         << "Check for updates at <a href=\"http://krokcom.sf.net\">http://krokcom.sf.net</a><p>"
         << "<p>Based on the original <a href=\"http://www.arminvogl.de/KrokodileCartridge\">Windows version</a><br>"
         << "Copyright &copy; 2002-2009 <a href=\"mailto:Armin.Vogl@gmx.net\">Armin Vogl</a></p>"

@@ -1,2 +1,2 @@
 #!/bin/bash
-qmake-qt4 krokcom.pro
+qmake krokcom.pro

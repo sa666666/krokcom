@@ -6,12 +6,10 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009-2013 by Stephen Anthony <stephena@users.sf.net>
+// Copyright (c) 2009-2017 by Stephen Anthony <sa666666@gmail.com>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
-//
-// $Id$
 //============================================================================
 
 /**
@@ -223,7 +221,7 @@ BSType CartDetector::getRomInfo(const string& filename,
                                 const uInt8* image, uInt32 size)
 {
   // Check if the type is already defined
-  // Remove any redundant entries 
+  // Remove any redundant entries
   QString file  = QFileInfo(QString(filename.c_str())).canonicalFilePath();
   QString md5   = MD5(image, size).c_str();
   QString key   = file + "/" + md5;

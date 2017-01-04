@@ -6,12 +6,10 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009-2013 by Stephen Anthony <stephena@users.sf.net>
+// Copyright (c) 2009-2017 by Stephen Anthony <sa666666@gmail.com>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
-//
-// $Id$
 //============================================================================
 
 #include <cstring>
@@ -553,9 +551,9 @@ void Cart::menuEntry(uInt8* menuentry, const string& menuname) const
     // Pad with spaces once we have reached the end of the name
     if (stringpos >= menuname.length())
       charpos = 0;
-    else 
+    else
     {
-      // Retrieve next character from name 
+      // Retrieve next character from name
       next = menuname[stringpos];
       for (charpos = (sizeof(MC_NameChars) - 1); charpos > 0; charpos --)
       {

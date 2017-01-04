@@ -13,8 +13,6 @@
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
-//
-// $Id$
 //============================================================================
 
 #ifndef BSPF_HXX
@@ -25,7 +23,6 @@
   that need to be defined for different operating systems.
 
   @author Bradford W. Mott
-  @version $Id$
 */
 
 #ifdef HAVE_INTTYPES
