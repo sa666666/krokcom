@@ -26,6 +26,7 @@ HEADERS += KrokComWindow.hxx \
 FORMS += krokcomwindow.ui \
     aboutdialog.ui
 RESOURCES += resources.qrc
+QT += widgets
 unix:!macx { 
     INCLUDEPATH += unix
     DEFINES += HAVE_INTTYPES BSPF_UNIX

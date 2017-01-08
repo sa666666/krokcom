@@ -14,7 +14,7 @@
 
 /**
   Auto-detect cart type.
-  Based on auto-detection code from Stella (http://stella.sf.net)
+  Based on auto-detection code from Stella (https://stella-emu.github.io)
 
   @author  Stephen Anthony
 */

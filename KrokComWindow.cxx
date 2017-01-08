@@ -87,8 +87,8 @@ KrokComWindow::KrokComWindow(QWidget* parent)
   ui->mcartTable->horizontalHeader()->resizeSection(0, 140);
   ui->mcartTable->horizontalHeader()->resizeSection(2, 28);
   ui->mcartTable->horizontalHeader()->resizeSection(3, 28);
-  ui->mcartTable->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
-  ui->mcartTable->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+  ui->mcartTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  ui->mcartTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 
   slotSetMCBSType(0);
 
@@ -504,7 +504,7 @@ void KrokComWindow::slotAbout()
         << "<ul>"
         << "<li>JKrokcom: Preliminary Java port of KrokCom</li>"
         << "<li><a href=\"http://harmony.atariage.com\">HarmonyCart</a>: UI code, icons and other images</li>"
-        << "<li><a href=\"http://stella.sf.net\">Stella</a>: bankswitch autodetection code</li>"
+        << "<li><a href=\"https://stella-emu.github.io\">Stella</a>: bankswitch autodetection code</li>"
         << "</ul>"
         << "<p>Special thanks go to the following people:"
         << "<p><ul>"
@@ -515,11 +515,18 @@ void KrokComWindow::slotAbout()
         << "<li>Armin Vogl: Author of the Windows version of KrokCom, and designer of the UI (I basically reused the UI from KrokCom for Windows)</li>"
         << "<li>Chris Walton: Provided preliminary Java-based commandline implementation of JKrokCom</li>"
         << "</ul></p>"
+
+        << "<p>Version 1.3 (Jan. 5, 2017):</p>"
+        << "<ul>"
+        << "<li>Ported application to Qt5.</li>"
+        << "</ul>"
+
         << "<p>Version 1.2 (Dec. 25, 2012):</p>"
         << "<ul>"
         << "<li>Fixed bugs in user interface (cut off text, progress bar not always appearing, etc).</li>"
         << "<li>Updated bankswitch autodetection code to latest from Stella 3.7.5.</li>"
         << "</ul>"
+
         << "<p>Version 1.1 (Dec. 6, 2009):</p>"
         << "<ul>"
         << "<li>Added a menu item for crediting people responsible for helping me "
@@ -527,6 +534,7 @@ void KrokComWindow::slotAbout()
         << "<li>Native support for OSX Snow Leopard by including Qt 4.6 (the first "
         << "version to actually support OSX 10.6).</li>"
         << "</ul>"
+
         << "<p>Version 1.0 (Nov. 15, 2009):</p>"
         << "<ul>"
         << "<li>Initial release for Linux/UNIX and Mac OSX.</li>"
