@@ -16,8 +16,6 @@
 #include <fstream>
 #include <sstream>
 
-#include "bspf_krok.hxx"
-
 #include "BSType.hxx"
 #include "Cart.hxx"
 #include "MultiCart.hxx"
@@ -154,7 +152,7 @@ bool Cart::createMultiFile(const StringList& menuNames, const StringList& fileNa
   myCartSize += MC_ByteSizes[size];
 
   // Scan through each item in the list(s)
-  int numEntries = BSPF_min((int)menuNames.size(), MC_MaxEntries[size]);
+  int numEntries = std::min(int(menuNames.size()), MC_MaxEntries[size]);
   int validEntries = 0;
   for(int i = 0; i < numEntries; ++i)
   {
@@ -376,15 +374,15 @@ uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize,
   if(showmessage) cout << "Reading from file: \'" << filename.c_str() << "\' ... ";
 
   // Read file into buffer
-  ifstream in(filename.c_str(), ios::binary);
+  ifstream in(filename, std::ios::binary);
   if(!in)
     return 0;
 
   // Figure out how much data we should read
-  in.seekg(0, ios::end);
-  streampos length = in.tellg();
-  in.seekg(0, ios::beg);
-  uInt32 size = length > maxSize ? maxSize : (uInt32)length;
+  in.seekg(0, std::ios::end);
+  std::streampos length = in.tellg();
+  in.seekg(0, std::ios::beg);
+  uInt32 size = length > maxSize ? maxSize : uInt32(length);
 
   in.read((char*)buffer, size);
   if(showmessage) cout << "read in " << size << " bytes" << endl;
@@ -400,7 +398,7 @@ uInt32 Cart::writeFile(const string& filename, uInt8* buffer, uInt32 size,
   if(showmessage) cout << "Writing to file: \'" << filename.c_str() << "\' ... ";
 
   // Write to file from buffer
-  ofstream out(filename.c_str(), ios::binary);
+  ofstream out(filename, std::ios::binary);
   if(!out)
     return 0;
 

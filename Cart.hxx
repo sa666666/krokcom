@@ -20,8 +20,7 @@
 
 #include <vector>
 
-#include "bspf_krok.hxx"
-
+#include "bspf.hxx"
 #include "BSType.hxx"
 #include "SerialPort.hxx"
 

@@ -25,7 +25,6 @@
 #include <cstring>
 #include <fstream>
 
-#include "bspf_krok.hxx"
 #include "MD5.hxx"
 #include "CartDetector.hxx"
 
@@ -35,13 +34,13 @@ BSType CartDetector::autodetectType(const string& rom)
   BSType type = BS_NONE;
 
   // Read file into buffer
-  ifstream in(rom.c_str(), ios::binary);
+  ifstream in(rom, std::ios::binary);
   if(in)
   {
     // Figure out how much data we should read
-    in.seekg(0, ios::end);
-    streampos length = in.tellg();
-    in.seekg(0, ios::beg);
+    in.seekg(0, std::ios::end);
+    std::streampos length = in.tellg();
+    in.seekg(0, std::ios::beg);
     if(length > 0)
     {
       uInt8* buffer = new uInt8[length];

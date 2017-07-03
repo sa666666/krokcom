@@ -12,8 +12,6 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#include "bspf_krok.hxx"
-
 #if defined(__OpenBSD__)
   #include <errno.h>
 #else

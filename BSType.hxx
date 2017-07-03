@@ -21,7 +21,7 @@
 #ifndef BSTYPE_HXX
 #define BSTYPE_HXX
 
-#include "bspf_krok.hxx"
+#include "bspf.hxx"
 
 enum BSType
 {
@@ -107,39 +107,39 @@ class Bankswitch
 
     static BSType nameToType(const string& name)
     {
-      if(BSPF_equalsIgnoreCase(name, "4K"))         return BS_4K;
-      else if(BSPF_equalsIgnoreCase(name, "F8"))    return BS_F8;
-      else if(BSPF_equalsIgnoreCase(name, "F6"))    return BS_F6;
-      else if(BSPF_equalsIgnoreCase(name, "F4"))    return BS_F4;
-      else if(BSPF_equalsIgnoreCase(name, "MCF6"))  return BS_MCF6;
-      else if(BSPF_equalsIgnoreCase(name, "FA"))    return BS_FA;
-      else if(BSPF_equalsIgnoreCase(name, "3F"))    return BS_3F;
-      else if(BSPF_equalsIgnoreCase(name, "MCF8"))  return BS_MCF8;
-      else if(BSPF_equalsIgnoreCase(name, "F8SC"))  return BS_F8SC;
-      else if(BSPF_equalsIgnoreCase(name, "F6SC"))  return BS_F6SC;
-      else if(BSPF_equalsIgnoreCase(name, "F4SC"))  return BS_F4SC;
-      else if(BSPF_equalsIgnoreCase(name, "MCF4"))  return BS_MCF4;
-      else if(BSPF_equalsIgnoreCase(name, "MC4K"))  return BS_MC4K;
-      else if(BSPF_equalsIgnoreCase(name, "EF"))    return BS_EF;
-      else if(BSPF_equalsIgnoreCase(name, "CV"))    return BS_CV;
-      else if(BSPF_equalsIgnoreCase(name, "3E"))    return BS_3E;
-      else if(BSPF_equalsIgnoreCase(name, "UA"))    return BS_UA;
-      else if(BSPF_equalsIgnoreCase(name, "F0"))    return BS_F0;
-      else if(BSPF_equalsIgnoreCase(name, "E0"))    return BS_E0;
-      else if(BSPF_equalsIgnoreCase(name, "E7"))    return BS_E7;
-      else if(BSPF_equalsIgnoreCase(name, "FE"))    return BS_FE;
-      else if(BSPF_equalsIgnoreCase(name, "AR"))    return BS_AR;
-      else if(BSPF_equalsIgnoreCase(name, "EFSC"))  return BS_EFSC;
-      else if(BSPF_equalsIgnoreCase(name, "0840"))  return BS_0840;
+      if(BSPF::equalsIgnoreCase(name, "4K"))         return BS_4K;
+      else if(BSPF::equalsIgnoreCase(name, "F8"))    return BS_F8;
+      else if(BSPF::equalsIgnoreCase(name, "F6"))    return BS_F6;
+      else if(BSPF::equalsIgnoreCase(name, "F4"))    return BS_F4;
+      else if(BSPF::equalsIgnoreCase(name, "MCF6"))  return BS_MCF6;
+      else if(BSPF::equalsIgnoreCase(name, "FA"))    return BS_FA;
+      else if(BSPF::equalsIgnoreCase(name, "3F"))    return BS_3F;
+      else if(BSPF::equalsIgnoreCase(name, "MCF8"))  return BS_MCF8;
+      else if(BSPF::equalsIgnoreCase(name, "F8SC"))  return BS_F8SC;
+      else if(BSPF::equalsIgnoreCase(name, "F6SC"))  return BS_F6SC;
+      else if(BSPF::equalsIgnoreCase(name, "F4SC"))  return BS_F4SC;
+      else if(BSPF::equalsIgnoreCase(name, "MCF4"))  return BS_MCF4;
+      else if(BSPF::equalsIgnoreCase(name, "MC4K"))  return BS_MC4K;
+      else if(BSPF::equalsIgnoreCase(name, "EF"))    return BS_EF;
+      else if(BSPF::equalsIgnoreCase(name, "CV"))    return BS_CV;
+      else if(BSPF::equalsIgnoreCase(name, "3E"))    return BS_3E;
+      else if(BSPF::equalsIgnoreCase(name, "UA"))    return BS_UA;
+      else if(BSPF::equalsIgnoreCase(name, "F0"))    return BS_F0;
+      else if(BSPF::equalsIgnoreCase(name, "E0"))    return BS_E0;
+      else if(BSPF::equalsIgnoreCase(name, "E7"))    return BS_E7;
+      else if(BSPF::equalsIgnoreCase(name, "FE"))    return BS_FE;
+      else if(BSPF::equalsIgnoreCase(name, "AR"))    return BS_AR;
+      else if(BSPF::equalsIgnoreCase(name, "EFSC"))  return BS_EFSC;
+      else if(BSPF::equalsIgnoreCase(name, "0840"))  return BS_0840;
 
-      else if(BSPF_equalsIgnoreCase(name, "DPC"))   return BS_DPC;
-      else if(BSPF_equalsIgnoreCase(name, "4A50"))  return BS_4A50;
-      else if(BSPF_equalsIgnoreCase(name, "X07"))   return BS_X07;
-      else if(BSPF_equalsIgnoreCase(name, "SB"))    return BS_SB;
-      else if(BSPF_equalsIgnoreCase(name, "MC"))    return BS_MC;
-      else if(BSPF_equalsIgnoreCase(name, "DPC+"))  return BS_DPCP;
-      else if(BSPF_equalsIgnoreCase(name, "AUTO"))  return BS_AUTO;
-      else                                          return BS_NONE;
+      else if(BSPF::equalsIgnoreCase(name, "DPC"))   return BS_DPC;
+      else if(BSPF::equalsIgnoreCase(name, "4A50"))  return BS_4A50;
+      else if(BSPF::equalsIgnoreCase(name, "X07"))   return BS_X07;
+      else if(BSPF::equalsIgnoreCase(name, "SB"))    return BS_SB;
+      else if(BSPF::equalsIgnoreCase(name, "MC"))    return BS_MC;
+      else if(BSPF::equalsIgnoreCase(name, "DPC+"))  return BS_DPCP;
+      else if(BSPF::equalsIgnoreCase(name, "AUTO"))  return BS_AUTO;
+      else                                           return BS_NONE;
     }
 };
 

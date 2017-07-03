@@ -15,7 +15,7 @@
 #ifndef __SERIALPORTMANAGER_HXX
 #define __SERIALPORTMANAGER_HXX
 
-#include "bspf_krok.hxx"
+#include "bspf.hxx"
 
 #if defined(BSPF_MAC_OSX)
   #include "SerialPortMACOSX.hxx"

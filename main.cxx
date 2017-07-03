@@ -15,7 +15,7 @@
 #include <QApplication>
 #include <cstring>
 
-#include "bspf_krok.hxx"
+#include "bspf.hxx"
 #include "Cart.hxx"
 #include "SerialPort.hxx"
 #include "SerialPortManager.hxx"
@@ -71,21 +71,21 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
       while(sector < numSectors)
       {
         uInt16 lower = cart.currentSector();
-        uInt16 upper = lower + BSPF_min(15, (int)(numSectors-sector-1));
+        uInt16 upper = lower + std::min(15, int(numSectors-sector-1));
 
-        cout << "Sectors " << setw(4) << lower << " - " << setw(4) << upper << " | ";
+        cout << "Sectors " << std::setw(4) << lower << " - " << std::setw(4) << upper << " | ";
         for(uInt16 col = 0; col < 16; ++col)
         {
           if(sector < numSectors)
           {
             cart.writeNextSector(manager.port());
             ++sector;
-            cout << "." << flush;
+            cout << "." << std::flush;
           }
           else
-            cout << " " << flush;
+            cout << " " << std::flush;
         }
-        cout << " | successfully sent : " << setw(3) << (100*sector/numSectors) << "% complete" << endl;
+        cout << " | successfully sent : " << std::setw(3) << (100*sector/numSectors) << "% complete" << endl;
       }
     }
     catch(const char* msg)
@@ -108,21 +108,21 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
           while(sector < numSectors)
           {
             uInt16 lower = cart.currentSector();
-            uInt16 upper = lower + BSPF_min(15, (int)(numSectors-sector-1));
+            uInt16 upper = lower + std::min(15, (int)(numSectors-sector-1));
 
-            cout << endl << "Sectors " << setw(4) << lower << " - " << setw(4) << upper << " | ";
+            cout << endl << "Sectors " << std::setw(4) << lower << " - " << std::setw(4) << upper << " | ";
             for(uInt16 col = 0; col < 16; ++col)
             {
               if(sector < numSectors)
               {
                 cart.verifyNextSector(manager.port());
                 ++sector;
-                cout << "." << flush;
+                cout << "." << std::flush;
               }
               else
-                cout << " " << flush;
+                cout << " " << std::flush;
             }
-            cout << " | successfully verified : " << setw(3) << (100*sector/numSectors) << "% complete" << endl;
+            cout << " | successfully verified : " << std::setw(3) << (100*sector/numSectors) << "% complete" << endl;
           }
         }
         catch(const char* msg)
