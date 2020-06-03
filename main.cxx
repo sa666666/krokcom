@@ -6,7 +6,7 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009-2017 by Stephen Anthony <sa666666@gmail.com>
+// Copyright (c) 2009-2020 by Stephen Anthony <sa666666@gmail.com>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -144,7 +144,7 @@ int main(int ac, char* av[])
   if(ac == 2 && !strcmp(av[1], "-help"))
   {
     cout << "Krokodile Commander for UNIX version " << KROK_VERSION << endl
-         << "  http://krokcom.sf.net" << endl
+         << "  https://github.com/sa666666/krokcom" << endl
          << endl
          << "Usage: krokcom [options ...] datafile" << endl
          << "       Run without any options or datafile to use the graphical frontend" << endl
@@ -157,7 +157,7 @@ int main(int ac, char* av[])
          << "  -id         Perform an incremental download (only download changes since last time)" << endl
          << "  -help       Displays the message you're now reading" << endl
          << endl
-         << "This software is Copyright (c) 2009-2017 Stephen Anthony, and is released" << endl
+         << "This software is Copyright (c) 2009-2020 Stephen Anthony, and is released" << endl
          << "under the GNU GPL version 3." << endl
          << endl;
     return 0;

@@ -18,7 +18,7 @@ Description: Krokodile Cartridge programming tool for Linux and OSX.
  (such as Atari's SARA-chip games).
 
  KrokCom is a cross-platform application used to program the Krokodile
- Cartridge from a serial port/USB-serial converter for Linux/UNIX and OSX
+ Cartridge from a serial port/USB-serial converter for Linux/UNIX and macOS
  systems.  Both GUI and commandline usage is supported.
 
-  Homepage: http://krokcom.sf.net
+  Homepage: https://github.com/sa666666/krokcom

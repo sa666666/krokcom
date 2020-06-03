@@ -7,7 +7,7 @@
   K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 
 ===========================================================================
-                   Release 1.2 for Linux/UNIX and Mac OSX
+                   Release 1.3 for Linux/UNIX and macOS
 ===========================================================================
 
 The Krokodile Cartridge is a programmable game cartridge for the 2600 game
@@ -19,30 +19,27 @@ RAM to support games that require additional onboard cartridge memory
 (such as Atari's SARA-chip games).
 
 KrokCom is a cross-platform application used to program the Krokodile
-Cartridge from a serial port/USB-serial converter for Linux/UNIX and OSX
+Cartridge from a serial port/USB-serial converter for Linux/UNIX and macOS
 systems.  Both GUI and commandline usage is supported.
 
-This is the 1.2 release of KrokCom for Linux and Mac OSX.  The
+This is the 1.3 release of KrokCom for Linux and macOS.  The
 distributions currently available are:
 
-  * Binary distribution in 32-bit Ubuntu DEB format:
-      krokcom_1.2-1_i386.deb
-
   * Binary distribution in 64-bit Ubuntu DEB format:
-      krokcom_1.2-1_amd64.deb)
+      krokcom_1.3-1_amd64.deb)
 
-  * Binary distribution for Mac OSX:
-      KrokCom-1.2-macosx.dmg
+  * Binary distribution for macOS 10.7 and above:
+      KrokCom-1.3-macos.dmg
 
   * Source code distribution for all platforms:
-      (krokcom-1.2-src.tar.gz
+      krokcom-1.3-src.tar.xz
 
 Distribution Site
-================= 
+=================
 
 The KrokCom distributions can be obtained from the KrokCom Website at:
 
-  http://krokcom.sf.net
+  https://github.com/sa666666/krokcom
 
 Information about the Krokodile Cartridge (and software for Windows)
 can be obtained from the authors website:
