@@ -12,8 +12,8 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#ifndef __FINDKROKTHREAD_HXX
-#define __FINDKROKTHREAD_HXX
+#ifndef FIND_KROK_THREAD_HXX
+#define FIND_KROK_THREAD_HXX
 
 #include <QThread>
 
@@ -44,4 +44,4 @@ Q_OBJECT
     SerialPortManager& myManager;
 };
 
-#endif // FINDKROKTHREAD_HXX
+#endif // FIND_KROK_THREAD_HXX

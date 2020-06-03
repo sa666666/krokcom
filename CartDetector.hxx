@@ -12,8 +12,8 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#ifndef __CART_DETECTOR_HXX
-#define __CART_DETECTOR_HXX
+#ifndef CART_DETECTOR_HXX
+#define CART_DETECTOR_HXX
 
 #include "bspf.hxx"
 #include "BSType.hxx"

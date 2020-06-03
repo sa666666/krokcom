@@ -18,9 +18,6 @@
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SerialPortManager::SerialPortManager()
-  : myFoundKrokCart(false),
-    myPortName(""),
-    myVersionID("")
 {
   myPort.setBaud(115200);
   myPort.setControlSwap(false);
@@ -129,7 +126,7 @@ bool SerialPortManager::connect(const string& device)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-bool SerialPortManager::krokCartAvailable()
+bool SerialPortManager::krokCartAvailable() const
 {
   return myFoundKrokCart;
 }
@@ -141,13 +138,13 @@ SerialPort& SerialPortManager::port()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const string& SerialPortManager::portName()
+const string& SerialPortManager::portName() const
 {
   return myPortName;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const string& SerialPortManager::versionID()
+const string& SerialPortManager::versionID() const
 {
   return myVersionID;
 }

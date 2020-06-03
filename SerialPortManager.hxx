@@ -12,12 +12,12 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#ifndef __SERIALPORTMANAGER_HXX
-#define __SERIALPORTMANAGER_HXX
+#ifndef SERIAL_PORT_MANAGER_HXX
+#define SERIAL_PORT_MANAGER_HXX
 
 #include "bspf.hxx"
 
-#if defined(BSPF_MAC_OSX)
+#if defined(BSPF_MACOS)
   #include "SerialPortMACOSX.hxx"
 #elif defined(BSPF_UNIX)
   #include "SerialPortUNIX.hxx"
@@ -33,25 +33,25 @@ class SerialPortManager
 
     void setDefaultPort(const string& port);
     void connectKrokCart();
-    bool krokCartAvailable();
+    bool krokCartAvailable() const;
 
     SerialPort& port();
-    const string& portName();
-    const string& versionID();
+    const string& portName() const;
+    const string& versionID() const;
 
   private:
     bool connect(const string& device);
 
   private:
-  #if defined(BSPF_MAC_OSX)
+  #if defined(BSPF_MACOS)
     SerialPortMACOSX myPort;
   #elif defined(BSPF_UNIX)
     SerialPortUNIX myPort;
   #endif
 
-    bool myFoundKrokCart;
+    bool myFoundKrokCart{false};
     string myPortName;
     string myVersionID;
 };
 
-#endif // __SERIALPORTMANAGER_HXX
+#endif // SERIAL_PORT_MANAGER_HXX

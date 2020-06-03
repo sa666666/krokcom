@@ -21,15 +21,15 @@ HEADERS += KrokComWindow.hxx \
     Version.hxx \
     MultiCart.hxx \
     MD5.hxx \
-    AboutDialog.hxx \
-    UniquePtr.hxx
+    AboutDialog.hxx
 FORMS += krokcomwindow.ui \
     aboutdialog.ui
 RESOURCES += resources.qrc
 QT += widgets
+CONFIG += c++14
 unix:!macx {
     INCLUDEPATH += unix
-    DEFINES += HAVE_INTTYPES BSPF_UNIX
+    DEFINES += BSPF_UNIX
     SOURCES += unix/SerialPortUNIX.cxx
     HEADERS += unix/SerialPortUNIX.hxx
     TARGET = krokcom
@@ -52,7 +52,7 @@ unix:!macx {
 }
 macx {
     INCLUDEPATH += macosx
-    DEFINES += HAVE_INTTYPES BSPF_MAC_OSX
+    DEFINES += BSPF_MACOS
     SOURCES += macosx/SerialPortMACOSX.cxx
     HEADERS += macosx/SerialPortMACOSX.hxx
     LIBS += -framework CoreFoundation -framework IOKit

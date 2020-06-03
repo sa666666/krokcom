@@ -12,8 +12,8 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#ifndef __SERIALPORT_HXX
-#define __SERIALPORT_HXX
+#ifndef SERIAL_PORT_HXX
+#define SERIAL_PORT_HXX
 
 #include "bspf.hxx"
 
@@ -27,11 +27,8 @@
 class SerialPort
 {
   public:
-    SerialPort() :
-      myBaud(9600),
-      mySerialTimeoutCount(0),
-      myControlLinesSwapped(false) { }
-    virtual ~SerialPort() { }
+    SerialPort() = default;
+    virtual ~SerialPort() = default;
 
     /**
       Open the given serial port with the specified attributes.
@@ -234,9 +231,9 @@ class SerialPort
     }
 
   protected:
-    uInt32 myBaud;
-    uInt32 mySerialTimeoutCount;
-    bool myControlLinesSwapped;
+    uInt32 myBaud{9600};
+    uInt32 mySerialTimeoutCount{0};
+    bool myControlLinesSwapped{false};
     string myID;
     StringList myPortNames;
 };

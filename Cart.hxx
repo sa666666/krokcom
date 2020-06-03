@@ -12,8 +12,8 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#ifndef __CART_HXX
-#define __CART_HXX
+#ifndef CART_HXX
+#define CART_HXX
 
 // 2048 sectors of 256 bytes each
 #define MAXCARTSIZE 2048*256
@@ -35,7 +35,7 @@ class Cart
       Create a new Cart object, which can be used to create single
       cartridge or one consisting of many ROMs (aka multi-cart).
     */
-    Cart();
+    Cart() = default;
 
   public:
     /**
@@ -166,17 +166,17 @@ class Cart
 
   private:
     uInt8  myCart[MAXCARTSIZE];
-    uInt32 myCartSize;
-    uInt32 myRetry;
-    BSType myType;
-    bool   myIncremental;
+    uInt32 myCartSize{0};
+    uInt32 myRetry{0};
+    BSType myType{BS_NONE};
+    bool   myIncremental{false};
 
     // The following keep track of progress of sector writes
-    uInt16 myCurrentSector;
-    uInt16 myNumSectors;
+    uInt16 myCurrentSector{0};
+    uInt16 myNumSectors{0};
     bool myModifiedSectors[MAXCARTSIZE/256];
 
-    bool myIsValid;
+    bool myIsValid{false};
     string myLogMessage;
 
     static string ourLastCart;

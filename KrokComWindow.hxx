@@ -12,8 +12,8 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#ifndef __KROKCOM_WINDOW_HXX
-#define __KROKCOM_WINDOW_HXX
+#ifndef KROKCOM_WINDOW_HXX
+#define KROKCOM_WINDOW_HXX
 
 #include <QMainWindow>
 #include <QAction>
@@ -35,7 +35,7 @@ class KrokComWindow : public QMainWindow
 {
 Q_OBJECT
   public:
-    KrokComWindow(QWidget* parent = 0);
+    KrokComWindow(QWidget* parent = nullptr);
     ~KrokComWindow();
 
   public:
@@ -91,21 +91,21 @@ Q_OBJECT
     void slotCreateMulticart();
 
   private:
-    Ui::KrokComWindow* ui;
-    FindKrokThread* myFindKrokThread;
-    QButtonGroup* myQPGroup;
+    Ui::KrokComWindow* ui{nullptr};
+    FindKrokThread* myFindKrokThread{nullptr};
+    QButtonGroup* myQPGroup{nullptr};
 
     Cart myCart;
     SerialPortManager myManager;
-    BSType myDetectedBSType;
+    BSType myDetectedBSType{BS_NONE};
 
-    QLabel* myStatus;
-    QLabel* myLED;
-    QProgressBar* myProgress;
+    QLabel* myStatus{nullptr};
+    QLabel* myLED{nullptr};
+    QProgressBar* myProgress{nullptr};
     QDir myLastDir;
 
     QString myKrokCartMessage;
-    bool myDownloadInProgress;
+    bool myDownloadInProgress{false};
 };
 
 #endif

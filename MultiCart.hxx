@@ -12,8 +12,10 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
-#ifndef __MULTICART_HXX
-#define __MULTICART_HXX
+#ifndef MULTICART_HXX
+#define MULTICART_HXX
+
+#include "bspf.hxx"
 
 /**
   This file contains various tables required for creating multicart images

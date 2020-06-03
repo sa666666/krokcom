@@ -45,9 +45,7 @@ using namespace std;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 KrokComWindow::KrokComWindow(QWidget* parent)
   : QMainWindow(parent),
-    ui(new Ui::KrokComWindow),
-    myDetectedBSType(BS_NONE),
-    myDownloadInProgress(false)
+    ui(new Ui::KrokComWindow)
 {
   // Create GUI
   ui->setupUi(this);
