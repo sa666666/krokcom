@@ -51,10 +51,10 @@ unix:!macx {
         desktop
 }
 macx {
-    INCLUDEPATH += macosx
+    INCLUDEPATH += macos
     DEFINES += BSPF_MACOS
-    SOURCES += macosx/SerialPortMACOSX.cxx
-    HEADERS += macosx/SerialPortMACOSX.hxx
+    SOURCES += macos/SerialPortMACOS.cxx
+    HEADERS += macos/SerialPortMACOS.hxx
     LIBS += -framework CoreFoundation -framework IOKit
-    ICON = macosx/krokcom.icns
+    ICON = macos/krokcom.icns
 }
