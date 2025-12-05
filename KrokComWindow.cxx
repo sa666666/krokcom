@@ -6,7 +6,7 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009-2020 by Stephen Anthony <sa666666@gmail.com>
+// Copyright (c) 2009-2025 by Stephen Anthony <sa666666@gmail.com>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -493,7 +493,7 @@ void KrokComWindow::slotAbout()
   ostringstream about;
   about << "<center>"
         << "<p><b>Krokodile Commander for UNIX v" << KROK_VERSION << "</b></p>"
-        << "<p>Copyright &copy; 2009-2020 <a href=\"mailto:sa666666@gmail.com\">Stephen Anthony</a><br>"
+        << "<p>Copyright &copy; 2009-2025 <a href=\"mailto:sa666666@gmail.com\">Stephen Anthony</a><br>"
         << "Check for updates at <a href=\"https://github.com/sa666666/krokcom\">https://github.com/sa666666/krokcom</a><p>"
         << "<p>Based on the original <a href=\"http://www.arminvogl.de/KrokodileCartridge\">Windows version</a><br>"
         << "Copyright &copy; 2002-2009 <a href=\"mailto:Armin.Vogl@gmx.net\">Armin Vogl</a></p>"
@@ -514,7 +514,7 @@ void KrokComWindow::slotAbout()
         << "<li>Chris Walton: Provided preliminary Java-based commandline implementation of JKrokCom</li>"
         << "</ul></p>"
 
-        << "<p>Version 1.3 (Jun. 14, 2020):</p>"
+        << "<p>Version 1.3 (Dec. xx, 2025):</p>"
         << "<ul>"
         << "<li>Ported application to Qt5.</li>"
         << "</ul>"
@@ -728,8 +728,8 @@ void KrokComWindow::slotMCOpenInfoFile()
     QString key, menuname, filename;
     for(int i = 1; i <= rows; ++i)
     {
-      key.sprintf("Menu%03d", i);  menuname = s.value(key, "").toString();
-      key.sprintf("File%03d", i);  filename = s.value(key, "").toString();
+      key.asprintf("Menu%03d", i);  menuname = s.value(key, "").toString();
+      key.asprintf("File%03d", i);  filename = s.value(key, "").toString();
       setMCTableEntry(i-1, menuname, filename);
       if(menuname != "" && filename != "")
         ++count;
@@ -799,8 +799,8 @@ void KrokComWindow::slotMCSaveInfoFile()
     QString menukey, filekey, menuname, filename;
     for(int i = 1; i <= ui->mcartTable->rowCount(); ++i)
     {
-      menukey.sprintf("Menu%03d", i);
-      filekey.sprintf("File%03d", i);
+      menukey.asprintf("Menu%03d", i);
+      filekey.asprintf("File%03d", i);
       getMCTableEntry(i-1, menuname, filename);
       s.setValue(menukey, menuname);
       s.setValue(filekey, filename);

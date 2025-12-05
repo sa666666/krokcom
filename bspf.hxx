@@ -8,7 +8,7 @@
 //  BB  BB  SS  SS  PP      FF
 //  BBBBB    SSSS   PP      FF
 //
-// Copyright (c) 1995-2020 by Bradford W. Mott, Stephen Anthony
+// Copyright (c) 1995-2025 by Bradford W. Mott, Stephen Anthony
 // and the Stella Team
 //
 // See the file "License.txt" for information on usage and redistribution of
@@ -90,7 +90,7 @@ using DWordBuffer = std::unique_ptr<uInt32[]>;  // NOLINT
 using AdjustFunction = std::function<void(int)>;
 
 // We use KB a lot; let's make a literal for it
-constexpr size_t operator "" _KB(unsigned long long size)
+constexpr size_t operator ""_KB(unsigned long long size)
 {
    return static_cast<size_t>(size * 1024);
 }

@@ -6,7 +6,7 @@
 //  K  K   R R    O   O  K  K   C      O   O  M   M
 //  K   K  R  R    OOO   K   K   CCCC   OOO   M   M
 //
-// Copyright (c) 2009-2020 by Stephen Anthony <sa666666@gmail.com>
+// Copyright (c) 2009-2025 by Stephen Anthony <sa666666@gmail.com>
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -23,7 +23,6 @@
 #include <QSettings>
 
 #include <cstring>
-#include <fstream>
 
 #include "MD5.hxx"
 #include "CartDetector.hxx"
