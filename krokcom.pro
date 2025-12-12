@@ -1,6 +1,8 @@
 TARGET = KrokCom
 TEMPLATE = app
 
+CONFIG += c++20
+
 SOURCES += src/common/main.cxx \
     src/common/KrokComWindow.cxx \
     src/common/Cart.cxx \
@@ -32,8 +34,8 @@ CONFIG += c++14
 INCLUDEPATH += src/common
 
 unix:!macx {
-    INCLUDEPATH += src/unix
     DEFINES += BSPF_UNIX
+    INCLUDEPATH += src/unix
     SOURCES += src/unix/SerialPortUNIX.cxx
     HEADERS += src/unix/SerialPortUNIX.hxx
     TARGET = krokcom
@@ -53,13 +55,17 @@ unix:!macx {
         icon \
         docs \
         desktop
+    QMAKE_CXXFLAGS += -std=c++20
+    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
 }
 
 macx {
-    INCLUDEPATH += src/macos
     DEFINES += BSPF_MACOS
+    INCLUDEPATH += src/macos
     SOURCES += src/macos/SerialPortMACOS.cxx
     HEADERS += src/macos/SerialPortMACOS.hxx
     LIBS += -framework CoreFoundation -framework IOKit
     ICON = src/macos/krokcom.icns
+    QMAKE_CXXFLAGS += -std=c++20
+    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter -Wno-deprecated-declarations
 }
