@@ -15,6 +15,6 @@
 #ifndef VERSION_HXX
 #define VERSION_HXX
 
-#define KROK_VERSION "1.3"
+#define KROK_VERSION "1.3_rc1"
 
 #endif // KROK_HXX

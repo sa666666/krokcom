@@ -378,7 +378,7 @@ void KrokComWindow::slotDownloadROM()
   }
   catch(const char* msg)
   {
-    cout << msg << endl;
+    cout << msg << std::endl;
   }
   myDownloadInProgress = false;
 
@@ -437,7 +437,7 @@ void KrokComWindow::slotVerifyROM()
   }
   catch(const char* msg)
   {
-    cout << msg << endl;
+    cout << msg << std::endl;
   }
 
   if(sector == numSectors)

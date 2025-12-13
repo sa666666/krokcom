@@ -63,7 +63,7 @@ bool SerialPortUNIX::openPort(const string& device)
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
   if(cfsetspeed(&myNewtio, (speed_t)myBaud)
   {
-    cerr << "ERROR: baudrate " << myBaud << " not supported" << endl;
+    cerr << "ERROR: baudrate " << myBaud << " not supported" << std::endl;
     return false;
   }
 #else
@@ -87,7 +87,7 @@ bool SerialPortUNIX::openPort(const string& device)
     case    9600: NEWTERMIOS_SETBAUDRATE(B9600);    break;
     default:
     {
-      cerr << "ERROR: unknown baudrate " << myBaud << endl;
+      cerr << "ERROR: unknown baudrate " << myBaud << std::endl;
       return false;
     }
   }
@@ -189,7 +189,7 @@ void SerialPortUNIX::controlModemLines(bool DTR, bool RTS)
 
   int status;
   if(ioctl(myHandle, TIOCMGET, &status) != 0)
-    cerr << "ioctl get failed, status = " << status << endl;
+    cerr << "ioctl get failed, status = " << status << std::endl;
 
   if (DTR) status |=  TIOCM_DTR;
   else     status &= ~TIOCM_DTR;
@@ -197,9 +197,9 @@ void SerialPortUNIX::controlModemLines(bool DTR, bool RTS)
   else     status &= ~TIOCM_RTS;
 
   if (ioctl(myHandle, TIOCMSET, &status) != 0)
-    cerr << "ioctl set failed, status = " << status << endl;
+    cerr << "ioctl set failed, status = " << status << std::endl;
   if (ioctl(myHandle, TIOCMGET, &status) != 0)
-    cerr << "ioctl get failed, status = " << status << endl;
+    cerr << "ioctl get failed, status = " << status << std::endl;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

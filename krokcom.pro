@@ -1,8 +1,6 @@
 TARGET = KrokCom
 TEMPLATE = app
 
-CONFIG += c++20
-
 SOURCES += src/common/main.cxx \
     src/common/KrokComWindow.cxx \
     src/common/Cart.cxx \
@@ -23,15 +21,13 @@ HEADERS += src/common/KrokComWindow.hxx \
     src/common/MD5.hxx \
     src/common/AboutDialog.hxx
 FORMS += src/common/krokcomwindow.ui src/common/aboutdialog.ui
+
 RESOURCES += src/resources.qrc
+INCLUDEPATH += src/common
+QT += widgets
 MOC_DIR = obj
 OBJECTS_DIR = obj
 UI_DIR = obj
-
-QT += widgets
-CONFIG += c++14
-
-INCLUDEPATH += src/common
 
 unix:!macx {
     DEFINES += BSPF_UNIX

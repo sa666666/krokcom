@@ -46,11 +46,11 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
   if(manager.krokCartAvailable())
   {
     cout << "KrokCart: \'" << manager.versionID().c_str() << "\'"
-         << " @ \'" << manager.portName().c_str() << "\'" << endl;
+         << " @ \'" << manager.portName().c_str() << "\'" << std::endl;
   }
   else
   {
-    cout << "KrokCart not detected" << endl;
+    cout << "KrokCart not detected" << std::endl;
     return;
   }
 
@@ -66,7 +66,7 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
   {
     try
     {
-      cout << endl;
+      cout << std::endl;
       uInt16 sector = 0, numSectors = cart.initSectors(true);
       while(sector < numSectors)
       {
@@ -85,17 +85,17 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
           else
             cout << " " << std::flush;
         }
-        cout << " | successfully sent : " << std::setw(3) << (100*sector/numSectors) << "% complete" << endl;
+        cout << " | successfully sent : " << std::setw(3) << (100*sector/numSectors) << "% complete" << std::endl;
       }
     }
     catch(const char* msg)
     {
-      cout << msg << endl;
+      cout << msg << std::endl;
     }
 
     if(cart.finalizeSectors())
     {
-      cout << cart.message().c_str() << endl;
+      cout << cart.message().c_str() << std::endl;
 
       // See if we should automatically verify the download
       if(autoverify)
@@ -110,7 +110,7 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
             uInt16 lower = cart.currentSector();
             uInt16 upper = lower + std::min(15, (int)(numSectors-sector-1));
 
-            cout << endl << "Sectors " << std::setw(4) << lower << " - " << std::setw(4) << upper << " | ";
+            cout << std::endl << "Sectors " << std::setw(4) << lower << " - " << std::setw(4) << upper << " | ";
             for(uInt16 col = 0; col < 16; ++col)
             {
               if(sector < numSectors)
@@ -122,20 +122,20 @@ void runCommandlineApp(KrokComWindow& win, int ac, char* av[])
               else
                 cout << " " << std::flush;
             }
-            cout << " | successfully verified : " << std::setw(3) << (100*sector/numSectors) << "% complete" << endl;
+            cout << " | successfully verified : " << std::setw(3) << (100*sector/numSectors) << "% complete" << std::endl;
           }
         }
         catch(const char* msg)
         {
-          cout << msg << endl;
+          cout << msg << std::endl;
         }
       }
     }
     else
-      cout << cart.message().c_str() << endl;
+      cout << cart.message().c_str() << std::endl;
   }
   else
-    cout << "ERROR: Invalid cartridge, not written" << endl;
+    cout << "ERROR: Invalid cartridge, not written" << std::endl;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,23 +143,23 @@ int main(int ac, char* av[])
 {
   if(ac == 2 && !strcmp(av[1], "-help"))
   {
-    cout << "Krokodile Commander for UNIX version " << KROK_VERSION << endl
-         << "  https://github.com/sa666666/krokcom" << endl
-         << endl
-         << "Usage: krokcom [options ...] datafile" << endl
-         << "       Run without any options or datafile to use the graphical frontend" << endl
-         << "       Consult the manual for more in-depth information" << endl
-         << endl
-         << "Valid options are:" << endl
-         << endl
-         << "  -bs=[type]  Specify the bankswitching scheme for a ROM image (default is 'auto')" << endl
-         << "  -av         Automatically verify after a download is successfully completed" << endl
-         << "  -id         Perform an incremental download (only download changes since last time)" << endl
-         << "  -help       Displays the message you're now reading" << endl
-         << endl
-         << "This software is Copyright (c) 2009-2025 Stephen Anthony, and is released" << endl
-         << "under the GNU GPL version 3." << endl
-         << endl;
+    cout << "Krokodile Commander for UNIX version " << KROK_VERSION << std::endl
+         << "  https://github.com/sa666666/krokcom" << std::endl
+         << std::endl
+         << "Usage: krokcom [options ...] datafile" << std::endl
+         << "       Run without any options or datafile to use the graphical frontend" << std::endl
+         << "       Consult the manual for more in-depth information" << std::endl
+         << std::endl
+         << "Valid options are:" << std::endl
+         << std::endl
+         << "  -bs=[type]  Specify the bankswitching scheme for a ROM image (default is 'auto')" << std::endl
+         << "  -av         Automatically verify after a download is successfully completed" << std::endl
+         << "  -id         Perform an incremental download (only download changes since last time)" << std::endl
+         << "  -help       Displays the message you're now reading" << std::endl
+         << std::endl
+         << "This software is Copyright (c) 2009-2025 Stephen Anthony, and is released" << std::endl
+         << "under the GNU GPL version 3." << std::endl
+         << std::endl;
     return 0;
   }
 

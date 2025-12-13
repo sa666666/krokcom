@@ -73,7 +73,7 @@ bool SerialPortMACOS::openPort(const string& device)
     case    9600: NEWTERMIOS_SETBAUDRATE(B9600);    break;
     default:
     {
-      cerr << "ERROR: unknown baudrate " << myBaud << endl;
+      cerr << "ERROR: unknown baudrate " << myBaud << std::endl;
       return false;
     }
   }
@@ -174,7 +174,7 @@ void SerialPortMACOS::controlModemLines(bool DTR, bool RTS)
 
   int status;
   if(ioctl(myHandle, TIOCMGET, &status) != 0)
-    cerr << "ioctl get failed, status = " << status << endl;
+    cerr << "ioctl get failed, status = " << status << std::endl;
 
   if (DTR) status |=  TIOCM_DTR;
   else     status &= ~TIOCM_DTR;
@@ -182,9 +182,9 @@ void SerialPortMACOS::controlModemLines(bool DTR, bool RTS)
   else     status &= ~TIOCM_RTS;
 
   if (ioctl(myHandle, TIOCMSET, &status) != 0)
-    cerr << "ioctl set failed, status = " << status << endl;
+    cerr << "ioctl set failed, status = " << status << std::endl;
   if (ioctl(myHandle, TIOCMGET, &status) != 0)
-    cerr << "ioctl get failed, status = " << status << endl;
+    cerr << "ioctl get failed, status = " << status << std::endl;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -221,7 +221,7 @@ kern_return_t SerialPortMACOS::createSerialIterator(io_iterator_t* serialIterato
   CFMutableDictionaryRef classesToMatch;
   if((kernResult = IOMasterPort(NULL, &masterPort)) != KERN_SUCCESS)
   {
-    cerr << "IOMasterPort returned " << kernResult << endl;
+    cerr << "IOMasterPort returned " << kernResult << std::endl;
     return kernResult;
   }
   if((classesToMatch = IOServiceMatching(kIOSerialBSDServiceValue)) == NULL)
@@ -233,7 +233,7 @@ kern_return_t SerialPortMACOS::createSerialIterator(io_iterator_t* serialIterato
   kernResult = IOServiceGetMatchingServices(masterPort, classesToMatch, serialIterator);
   if(kernResult != KERN_SUCCESS)
   {
-    cerr << "IOServiceGetMatchingServices returned " << kernResult << endl;
+    cerr << "IOServiceGetMatchingServices returned " << kernResult << std::endl;
   }
   return kernResult;
 }

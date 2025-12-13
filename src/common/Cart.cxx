@@ -32,13 +32,13 @@ bool Cart::create(const string& filename, const string& type)
   {
     myType = CartDetector::autodetectType(filename, myCart, myCartSize);
     cout << "Bankswitch type: " << Bankswitch::typeToName(myType).c_str()
-         << " (auto-detected)" << endl;
+         << " (auto-detected)" << std::endl;
   }
   else
   {
     myType = Bankswitch::nameToType(type);
     cout << "Bankswitch type: " << Bankswitch::typeToName(myType).c_str()
-         << " (WARNING: overriding auto-detection)" << endl;
+         << " (WARNING: overriding auto-detection)" << std::endl;
   }
   switch(myType)
   {
@@ -57,7 +57,7 @@ bool Cart::create(const string& filename, const string& type)
       ostringstream out;
       out << "Bankswitch mode \'" << Bankswitch::typeToName(myType).c_str() << "\' is not supported.";
       myLogMessage = out.str();
-      cout << myLogMessage.c_str() << endl;
+      cout << myLogMessage.c_str() << std::endl;
       return myIsValid = false;
     }
     default:
@@ -85,7 +85,7 @@ bool Cart::create(const string& filename, const string& type)
   else
     myLogMessage = "Invalid cartridge.";
 
-  cout << myLogMessage.c_str() << endl;
+  cout << myLogMessage.c_str() << std::endl;
   return myIsValid;
 }
 
@@ -163,16 +163,16 @@ bool Cart::createMultiFile(const StringList& menuNames, const StringList& fileNa
     }
     else
       cout << "Multicart image " << i << " skipped; invalid bankswitch type \'"
-           << Bankswitch::typeToName(imgtype).c_str() << "\'" << endl;
+           << Bankswitch::typeToName(imgtype).c_str() << "\'" << std::endl;
   }
   delete[] imgbuf;
 
   // Set PAL/NTSC
-  cout << "Setting " << (ntsc ? "NTSC" : "PAL") << " multicart menu type." << endl;
+  cout << "Setting " << (ntsc ? "NTSC" : "PAL") << " multicart menu type." << std::endl;
   myCart[MC_MenuOffset[size] + 2046] = ntsc ? 128 : 0;
 
   // Set number of menu entries
-  cout << "Multicart has " << validEntries << " menu entries." << endl;
+  cout << "Multicart has " << validEntries << " menu entries." << std::endl;
   myCart[MC_MenuOffset[size] + 2047] = (uInt8)validEntries;
 
   myIsValid = validEntries > 0;
@@ -253,7 +253,7 @@ uInt16 Cart::initSectors(bool downloadMode)
             << (myCartSize/256) << " sectors are changed.";
         myLogMessage = out.str();
       }
-      cout << myLogMessage.c_str() << endl;
+      cout << myLogMessage.c_str() << std::endl;
     }
   }
   else
@@ -278,7 +278,7 @@ uInt16 Cart::writeNextSector(SerialPort& port)
   {
     bool status;
     while(!(status = downloadSector(sector, port)) && retry++ < myRetry)
-      cout << "Write transmission of sector " <<  sector << " failed, retry " << retry << endl;
+      cout << "Write transmission of sector " <<  sector << " failed, retry " << retry << std::endl;
     if(!status)
       throw "write: failed max retries";
   }
@@ -307,7 +307,7 @@ uInt16 Cart::verifyNextSector(SerialPort& port)
 
   bool status;
   while(!(status = verifySector(sector, port)) && retry++ < myRetry)
-    cout << "Read transmission of sector " <<  sector << " failed, retry " << retry << endl;
+    cout << "Read transmission of sector " <<  sector << " failed, retry " << retry << std::endl;
   if(!status)
     throw "verify: failed max retries";
 
@@ -359,7 +359,7 @@ uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize,
   if(showmessage) cout << "Reading from file: \'" << filename.c_str() << "\' ... ";
 
   // Read file into buffer
-  ifstream in(filename, std::ios::binary);
+  std::ifstream in(filename, std::ios::binary);
   if(!in)
     return 0;
 
@@ -370,7 +370,7 @@ uInt32 Cart::readFile(const string& filename, uInt8* buffer, uInt32 maxSize,
   uInt32 size = length > maxSize ? maxSize : uInt32(length);
 
   in.read((char*)buffer, size);
-  if(showmessage) cout << "read in " << size << " bytes" << endl;
+  if(showmessage) cout << "read in " << size << " bytes" << std::endl;
   in.close();
 
   return size;
@@ -383,12 +383,12 @@ uInt32 Cart::writeFile(const string& filename, uInt8* buffer, uInt32 size,
   if(showmessage) cout << "Writing to file: \'" << filename.c_str() << "\' ... ";
 
   // Write to file from buffer
-  ofstream out(filename, std::ios::binary);
+  std::ofstream out(filename, std::ios::binary);
   if(!out)
     return 0;
 
   out.write((char*)buffer, size);
-  if(showmessage) cout << "wrote out " << size << " bytes" << endl;
+  if(showmessage) cout << "wrote out " << size << " bytes" << std::endl;
   out.close();
 
   return size;
@@ -400,7 +400,7 @@ void Cart::padImage(uInt8* buffer, uInt32 bufsize, uInt32 requiredsize) const
   // Pad buffer to minimum size, aligning to power-of-2 boundary
   if(bufsize < requiredsize)
   {
-    cout << "  Converting to " << (requiredsize/1024) << "K." << endl;
+    cout << "  Converting to " << (requiredsize/1024) << "K." << std::endl;
 
     // Determine power-of-2 boundary
     uInt32 power2 = 1;
@@ -438,7 +438,7 @@ bool Cart::downloadSector(uInt32 sector, SerialPort& port) const
   // Write sector to serial port
   if(port.send(buffer, 262) != 262)
   {
-    cout << "Transmission error in downloadSector" << endl;
+    cout << "Transmission error in downloadSector" << std::endl;
     return false;
   }
 
@@ -449,7 +449,7 @@ bool Cart::downloadSector(uInt32 sector, SerialPort& port) const
   // Check return code
   if(result == 0x7c)
   {
-    cout << "Checksum Error for sector " << sector << endl;
+    cout << "Checksum Error for sector " << sector << std::endl;
     return false;
   }
   else if(result == 0xff)
@@ -458,7 +458,7 @@ bool Cart::downloadSector(uInt32 sector, SerialPort& port) const
   }
   else
   {
-    cout << "Undefined response " << (int)result << " for sector " << sector << endl;
+    cout << "Undefined response " << (int)result << " for sector " << sector << std::endl;
     return false;
   }
 }
@@ -480,7 +480,7 @@ bool Cart::verifySector(uInt32 sector, SerialPort& port) const
   // Write command to serial port
   if(port.send(buffer, 5) != 5)
   {
-    cout << "Write transmission error of command in verifySector" << endl;
+    cout << "Write transmission error of command in verifySector" << std::endl;
     return false;
   }
 
@@ -491,12 +491,12 @@ bool Cart::verifySector(uInt32 sector, SerialPort& port) const
   // Check return code
   if(result == 0x00)
   {
-    cout << "Checksum Error for verify sector " << sector << endl;
+    cout << "Checksum Error for verify sector " << sector << std::endl;
     return false;
   }
   else if(result != 0xfe)
   {
-    cout << "Undefined response " << (int)result << " for sector " << sector << endl;
+    cout << "Undefined response " << (int)result << " for sector " << sector << std::endl;
     return false;
   }
 
